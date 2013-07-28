@@ -1,14 +1,16 @@
-//
-//  Time.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 7/22/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
 
-#ifndef __treeSAT__Time__
-#define __treeSAT__Time__
+#pragma once
+#include "config.h"
 
-#include <iostream>
+double unifRand();
+double unifRand(double a, double b);
+long unifRand(long n);
+void seed();
+void tick();
+void tock();
+void parse_parameters(int argc,char *argv[], Configuration* cfg);
+template<class T> string toString(T temp);
+void scanone(int argc, char *argv[], int i, int *varptr);
+void scanonell(int argc, char *argv[], int i, long long int *varptr);
+void scanoneu(int argc, char *argv[], int i, unsigned int *varptr);
 
-#endif /* defined(__treeSAT__Time__) */

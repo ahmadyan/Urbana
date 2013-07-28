@@ -1,14 +1,18 @@
-//
-//  State.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 7/22/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
-
-#ifndef __treeSAT__State__
-#define __treeSAT__State__
-
-#include <iostream>
-
-#endif /* defined(__treeSAT__State__) */
+#pragma once
+#include "object.h"
+// We consider a set of inputs as state,
+// There is a one to one relation between State class and Clauses class, but not vice versa
+class Output;
+class Node;
+class State:public Object{
+    Output* output;
+    Node* node;
+public:
+    State(int size);
+    State(State*);
+    ~State();
+    void setOutput(Output*);
+    Output* getOutput();
+    Node* getNode();
+    void setNode(Node*);
+};

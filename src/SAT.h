@@ -1,14 +1,40 @@
-//
-//  SAT.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 7/22/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
-
-#ifndef __treeSAT__SAT__
-#define __treeSAT__SAT__
-
+#pragma once
 #include <iostream>
+#include <vector>
 
-#endif /* defined(__treeSAT__SAT__) */
+#include "Output.h"
+#include "State.h"
+#include "Graph.h"
+#include "config.h"
+using namespace std;
+
+class SAT{
+    int numvariable;
+    int numclause;
+
+    Configuration* config;
+    vector<Output*> exploredOutputs;
+    vector<State*> exploredStates;
+    Graph* g;
+    
+    int** clause;                   // clauses to be satisfied indexed as clause[clause_num][literal_num]
+    int** occurrence;	// where each literal occurs indexed as occurrence[literal][occurrence_num]
+
+    
+    int* size;             // length of each clause
+    int* numOccurence; // number of times each literal occurs
+    int* numOccurencePos;
+    int* numOccurenceNeg;
+
+public:
+    SAT(Configuration*);
+    ~SAT();
+    
+    void solve();
+    Output* search(Output*);
+    Output* update(State* state);
+    Node* flip(Node*, int);
+    int GetNumberOfVariables();
+    int GetNumberOfClauses();
+
+};

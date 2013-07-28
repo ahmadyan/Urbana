@@ -7,8 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F55C12DD1799CBE600BB35F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55C12DC1799CBE600BB35F6 /* main.cpp */; };
-		F55C12DF1799CBE700BB35F6 /* treeSAT.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = F55C12DE1799CBE700BB35F6 /* treeSAT.1 */; };
+		F55C12E61799CC1C00BB35F6 /* makewff.c in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E51799CC1C00BB35F6 /* makewff.c */; };
+		F55C12E81799CC5500BB35F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E71799CC5500BB35F6 /* main.cpp */; };
+		F564E186179DC6420061F612 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E184179DC6420061F612 /* utility.cpp */; };
+		F564E18B179DC7870061F612 /* config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E187179DC7870061F612 /* config.cpp */; };
+		F564E18C179DC7870061F612 /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E189179DC7870061F612 /* plot.cpp */; };
+		F564E1A417A1B4BC0061F612 /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E1A217A1B4BC0061F612 /* object.cpp */; };
+		F57AE642179DC04500BF0A5E /* State.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE640179DC04500BF0A5E /* State.cpp */; };
+		F57AE646179DC1A100BF0A5E /* Output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE644179DC1A100BF0A5E /* Output.cpp */; };
+		F57AE649179DC20800BF0A5E /* Graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE647179DC20800BF0A5E /* Graph.cpp */; };
+		F57AE64E179DC2B500BF0A5E /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE64C179DC2B500BF0A5E /* Node.cpp */; };
+		F57AE652179DC45A00BF0A5E /* SAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE650179DC45A00BF0A5E /* SAT.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +27,6 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				F55C12DF1799CBE700BB35F6 /* treeSAT.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -26,8 +34,27 @@
 
 /* Begin PBXFileReference section */
 		F55C12D81799CBE600BB35F6 /* treeSAT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = treeSAT; sourceTree = BUILT_PRODUCTS_DIR; };
-		F55C12DC1799CBE600BB35F6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		F55C12DE1799CBE700BB35F6 /* treeSAT.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = treeSAT.1; sourceTree = "<group>"; };
+		F55C12E51799CC1C00BB35F6 /* makewff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makewff.c; path = ../../src/makewff.c; sourceTree = "<group>"; };
+		F55C12E71799CC5500BB35F6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../src/main.cpp; sourceTree = "<group>"; };
+		F564E184179DC6420061F612 /* utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utility.cpp; path = ../../src/utility.cpp; sourceTree = "<group>"; };
+		F564E185179DC6420061F612 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utility.h; path = ../../src/utility.h; sourceTree = "<group>"; };
+		F564E187179DC7870061F612 /* config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = config.cpp; path = ../../src/config.cpp; sourceTree = "<group>"; };
+		F564E188179DC7870061F612 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../../src/config.h; sourceTree = "<group>"; };
+		F564E189179DC7870061F612 /* plot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = plot.cpp; path = ../../src/plot.cpp; sourceTree = "<group>"; };
+		F564E18A179DC7870061F612 /* plot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = plot.h; path = ../../src/plot.h; sourceTree = "<group>"; };
+		F564E1A217A1B4BC0061F612 /* object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = ../../src/object.cpp; sourceTree = "<group>"; };
+		F564E1A317A1B4BC0061F612 /* object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = object.h; path = ../../src/object.h; sourceTree = "<group>"; };
+		F564E1A517A4AEBD0061F612 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.md; path = ../../src/README.md; sourceTree = "<group>"; };
+		F57AE640179DC04500BF0A5E /* State.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = State.cpp; path = ../../src/State.cpp; sourceTree = "<group>"; };
+		F57AE641179DC04500BF0A5E /* State.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = State.h; path = ../../src/State.h; sourceTree = "<group>"; };
+		F57AE644179DC1A100BF0A5E /* Output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Output.cpp; path = ../../src/Output.cpp; sourceTree = "<group>"; };
+		F57AE645179DC1A100BF0A5E /* Output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Output.h; path = ../../src/Output.h; sourceTree = "<group>"; };
+		F57AE647179DC20800BF0A5E /* Graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Graph.cpp; path = ../../src/Graph.cpp; sourceTree = "<group>"; };
+		F57AE648179DC20800BF0A5E /* Graph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Graph.h; path = ../../src/Graph.h; sourceTree = "<group>"; };
+		F57AE64C179DC2B500BF0A5E /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Node.cpp; path = ../../src/Node.cpp; sourceTree = "<group>"; };
+		F57AE64D179DC2B500BF0A5E /* Node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Node.h; path = ../../src/Node.h; sourceTree = "<group>"; };
+		F57AE650179DC45A00BF0A5E /* SAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SAT.cpp; path = ../../src/SAT.cpp; sourceTree = "<group>"; };
+		F57AE651179DC45A00BF0A5E /* SAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SAT.h; path = ../../src/SAT.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,10 +87,53 @@
 		F55C12DB1799CBE600BB35F6 /* treeSAT */ = {
 			isa = PBXGroup;
 			children = (
-				F55C12DC1799CBE600BB35F6 /* main.cpp */,
-				F55C12DE1799CBE700BB35F6 /* treeSAT.1 */,
+				F57AE64F179DC43D00BF0A5E /* algorithm */,
+				F57AE64B179DC22C00BF0A5E /* utility */,
+				F57AE64A179DC21B00BF0A5E /* core */,
+				F564E1A517A4AEBD0061F612 /* README.md */,
 			);
 			path = treeSAT;
+			sourceTree = "<group>";
+		};
+		F57AE64A179DC21B00BF0A5E /* core */ = {
+			isa = PBXGroup;
+			children = (
+				F564E1A217A1B4BC0061F612 /* object.cpp */,
+				F564E1A317A1B4BC0061F612 /* object.h */,
+				F57AE647179DC20800BF0A5E /* Graph.cpp */,
+				F57AE648179DC20800BF0A5E /* Graph.h */,
+				F57AE64C179DC2B500BF0A5E /* Node.cpp */,
+				F57AE64D179DC2B500BF0A5E /* Node.h */,
+				F57AE640179DC04500BF0A5E /* State.cpp */,
+				F57AE641179DC04500BF0A5E /* State.h */,
+				F57AE644179DC1A100BF0A5E /* Output.cpp */,
+				F57AE645179DC1A100BF0A5E /* Output.h */,
+			);
+			name = core;
+			sourceTree = "<group>";
+		};
+		F57AE64B179DC22C00BF0A5E /* utility */ = {
+			isa = PBXGroup;
+			children = (
+				F564E187179DC7870061F612 /* config.cpp */,
+				F564E188179DC7870061F612 /* config.h */,
+				F564E189179DC7870061F612 /* plot.cpp */,
+				F564E18A179DC7870061F612 /* plot.h */,
+				F55C12E51799CC1C00BB35F6 /* makewff.c */,
+				F55C12E71799CC5500BB35F6 /* main.cpp */,
+				F564E184179DC6420061F612 /* utility.cpp */,
+				F564E185179DC6420061F612 /* utility.h */,
+			);
+			name = utility;
+			sourceTree = "<group>";
+		};
+		F57AE64F179DC43D00BF0A5E /* algorithm */ = {
+			isa = PBXGroup;
+			children = (
+				F57AE650179DC45A00BF0A5E /* SAT.cpp */,
+				F57AE651179DC45A00BF0A5E /* SAT.h */,
+			);
+			name = algorithm;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -117,7 +187,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F55C12DD1799CBE600BB35F6 /* main.cpp in Sources */,
+				F55C12E61799CC1C00BB35F6 /* makewff.c in Sources */,
+				F55C12E81799CC5500BB35F6 /* main.cpp in Sources */,
+				F57AE642179DC04500BF0A5E /* State.cpp in Sources */,
+				F57AE646179DC1A100BF0A5E /* Output.cpp in Sources */,
+				F57AE649179DC20800BF0A5E /* Graph.cpp in Sources */,
+				F57AE64E179DC2B500BF0A5E /* Node.cpp in Sources */,
+				F57AE652179DC45A00BF0A5E /* SAT.cpp in Sources */,
+				F564E186179DC6420061F612 /* utility.cpp in Sources */,
+				F564E18B179DC7870061F612 /* config.cpp in Sources */,
+				F564E18C179DC7870061F612 /* plot.cpp in Sources */,
+				F564E1A417A1B4BC0061F612 /* object.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,7 +207,7 @@
 		F55C12E01799CBE700BB35F6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -146,8 +226,22 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/include,
+					/usr/include/gsl,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/usr/local/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libboost_system.dylib,
+					/usr/local/lib/libboost_thread.dylib,
+					"-L/usr/local/lib",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -155,7 +249,7 @@
 		F55C12E11799CBE700BB35F6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -168,7 +262,21 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/include,
+					/usr/include/gsl,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/usr/local/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libboost_system.dylib,
+					/usr/local/lib/libboost_thread.dylib,
+					"-L/usr/local/lib",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -206,6 +314,7 @@
 				F55C12E41799CBE700BB35F6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

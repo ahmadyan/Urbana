@@ -1,14 +1,20 @@
-//
-//  Graph.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 7/22/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
+#pragma once
+#include <vector>
+#include "object.h"
+#include "Node.h"
 
-#ifndef __treeSAT__Graph__
-#define __treeSAT__Graph__
+using namespace std;
 
-#include <iostream>
-
-#endif /* defined(__treeSAT__Graph__) */
+class Graph:public Object{
+    vector<Node*> nodes;
+    vector<int>   parents;
+public:
+    Graph();
+    ~Graph();
+    
+    void addRoot(Node*);
+    void addNode(Node*, Node*);
+    
+    int getSize();
+    Node* getNode(int);
+};
