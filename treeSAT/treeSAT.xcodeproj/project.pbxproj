@@ -1,0 +1,213 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F55C12DD1799CBE600BB35F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55C12DC1799CBE600BB35F6 /* main.cpp */; };
+		F55C12DF1799CBE700BB35F6 /* treeSAT.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = F55C12DE1799CBE700BB35F6 /* treeSAT.1 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F55C12D61799CBE600BB35F6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				F55C12DF1799CBE700BB35F6 /* treeSAT.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F55C12D81799CBE600BB35F6 /* treeSAT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = treeSAT; sourceTree = BUILT_PRODUCTS_DIR; };
+		F55C12DC1799CBE600BB35F6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		F55C12DE1799CBE700BB35F6 /* treeSAT.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = treeSAT.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F55C12D51799CBE600BB35F6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F55C12CD1799CBE600BB35F6 = {
+			isa = PBXGroup;
+			children = (
+				F55C12DB1799CBE600BB35F6 /* treeSAT */,
+				F55C12D91799CBE600BB35F6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F55C12D91799CBE600BB35F6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F55C12D81799CBE600BB35F6 /* treeSAT */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F55C12DB1799CBE600BB35F6 /* treeSAT */ = {
+			isa = PBXGroup;
+			children = (
+				F55C12DC1799CBE600BB35F6 /* main.cpp */,
+				F55C12DE1799CBE700BB35F6 /* treeSAT.1 */,
+			);
+			path = treeSAT;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F55C12D71799CBE600BB35F6 /* treeSAT */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F55C12E21799CBE700BB35F6 /* Build configuration list for PBXNativeTarget "treeSAT" */;
+			buildPhases = (
+				F55C12D41799CBE600BB35F6 /* Sources */,
+				F55C12D51799CBE600BB35F6 /* Frameworks */,
+				F55C12D61799CBE600BB35F6 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = treeSAT;
+			productName = treeSAT;
+			productReference = F55C12D81799CBE600BB35F6 /* treeSAT */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F55C12CF1799CBE600BB35F6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+				ORGANIZATIONNAME = "Adel Ahmadyan";
+			};
+			buildConfigurationList = F55C12D21799CBE600BB35F6 /* Build configuration list for PBXProject "treeSAT" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = F55C12CD1799CBE600BB35F6;
+			productRefGroup = F55C12D91799CBE600BB35F6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F55C12D71799CBE600BB35F6 /* treeSAT */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F55C12D41799CBE600BB35F6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F55C12DD1799CBE600BB35F6 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F55C12E01799CBE700BB35F6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F55C12E11799CBE700BB35F6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F55C12E31799CBE700BB35F6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F55C12E41799CBE700BB35F6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F55C12D21799CBE600BB35F6 /* Build configuration list for PBXProject "treeSAT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F55C12E01799CBE700BB35F6 /* Debug */,
+				F55C12E11799CBE700BB35F6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F55C12E21799CBE700BB35F6 /* Build configuration list for PBXNativeTarget "treeSAT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F55C12E31799CBE700BB35F6 /* Debug */,
+				F55C12E41799CBE700BB35F6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F55C12CF1799CBE600BB35F6 /* Project object */;
+}
