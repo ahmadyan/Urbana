@@ -5,8 +5,6 @@
 using namespace std;
 class State;
 class Output: public Object{
-    int n;
-    int* value;
     vector<State*> states;
 public:
     Output(int size);
