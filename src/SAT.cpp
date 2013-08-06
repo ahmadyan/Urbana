@@ -221,6 +221,71 @@ Node* SAT::flip(Node* node, int flipbit){
     return flippedNode;
 }
 
+//The initial training part of the algorithm, we later update the algorithm using the statistics
+//genereated from the RRT
+void SAT::init(){
+    int trainingSamples=100;
+    signalProbabilityStat = new double[numclause];
+    causalityStat = new double*[numvariable];
+    for(int i=0;i<numvariable;i++) causalityStat[i]=new double[numclause];
+    for(int i=0;i<numclause;i++){
+        signalProbabilityStat[i]=0;
+    }
+    for(int i=0;i<numvariable;i++){
+        for(int j=0;j<numclause;j++){
+            causalityStat[i][j]=0;
+        }
+    }
+    
+    for(int i=0;i<trainingSamples;i++){
+        State* s = new State(numvariable);
+        s->randomize();
+        Output* o = update(s);
+        int* data = o->getData();
+        cout << "Output tostring " << o->toString() << endl ;
+        for(int j=0;j<numclause;j++){
+            if(data[j]==1)
+                signalProbabilityStat[j]++;
+        }
+        for(int j=0;j<numvariable;j++){
+            for(int k=0;k<numOccurence[j];k++){
+                int clause = abs(occurrence[j][k]);
+                cout << "clause=" << clause << endl ;
+                cout << "data=" << data[clause] << endl ;
+                if( data[ clause ] == 1 ){
+                    causalityStat[j][clause]++;
+                } //else{causalityStat[j][clause]--;}
+            }
+        }
+        
+        
+        delete s;
+        delete o;
+    }
+    
+    for(int i=0;i<numclause;i++){
+        signalProbabilityStat[i] /= trainingSamples;
+    }
+    for(int i=0;i<numvariable;i++){
+        for(int j=0;j<numclause;j++){
+            causalityStat[i][j]/= trainingSamples;
+        }
+    }
+    
+    for(int i=0;i<numclause;i++){
+        cout << "clause:" << i << " " << signalProbabilityStat[i] << endl;
+    }
+    for(int i=0;i<numvariable;i++){
+        cout << "var " << i << " " ;
+        for(int j=0;j<numOccurence[i];j++){
+            int clause = abs(occurrence[i][j]);
+            cout << causalityStat[i][clause] << " ,";
+        }
+        cout << endl ;
+    }
+
+}
+
 void SAT::solve(){
     bool satisfiableAssignmentFound = false;
     int iter = 0;

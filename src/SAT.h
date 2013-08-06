@@ -25,11 +25,15 @@ class SAT{
     int* numOccurence; // number of times each literal occurs
     int* numOccurencePos;
     int* numOccurenceNeg;
+    
+    //statistics variables
+    double* signalProbabilityStat;
+    double** causalityStat;
 
 public:
     SAT(Configuration*);
     ~SAT();
-    
+    void init();
     void solve();
     Output* search(Output*);
     Output* update(State* state);

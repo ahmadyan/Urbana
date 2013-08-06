@@ -13,6 +13,7 @@ int main(int argc,char *argv[]){
     Configuration* config = new Configuration("config");
     parse_parameters(argc, argv, config);
     SAT* sat = new SAT(config);
+    sat->init();
     sat->solve();    
     return 0;
 }
