@@ -116,7 +116,7 @@ SAT::SAT(Configuration* conf){
     
     for(int i = 0;i < numclause;i++){
 		for(int j = 0;j < size[i];j++){
-            int var = abs(clause[i][j])-1;
+            int var = abs(clause[i][j]);
             occurrence[var][ occtmp[var]] = i;
             occtmp[var]++;
 		}
@@ -222,18 +222,32 @@ Node* SAT::flip(Node* node, int flipbit){
 }
 
 //The initial training part of the algorithm, we later update the algorithm using the statistics
-//genereated from the RRT
+//genereated from the algorithm itself
 void SAT::init(){
     int trainingSamples=100;
     signalProbabilityStat = new double[numclause];
-    causalityStat = new double*[numvariable];
-    for(int i=0;i<numvariable;i++) causalityStat[i]=new double[numclause];
+    correlationStatVariableClause = new double*[numvariable];
+    correlationStatClauseVariable = new double*[numclause];
+    posCorrelationStatVariableClause = new double*[numvariable];
+    posCorrelationStatClauseVariable = new double*[numclause];
+    
+    
+    // posCorrelationStatVariableClause
+    
+    for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause];
+    for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable];
+    for(int i=0;i<numvariable;i++) posCorrelationStatVariableClause[i]=new double[numclause];
+    for(int i=0;i<numclause;i++) posCorrelationStatClauseVariable[i]=new double[numvariable];
+    
     for(int i=0;i<numclause;i++){
         signalProbabilityStat[i]=0;
     }
     for(int i=0;i<numvariable;i++){
         for(int j=0;j<numclause;j++){
-            causalityStat[i][j]=0;
+            correlationStatVariableClause[i][j]=0;
+            correlationStatClauseVariable[j][i]=0;
+            posCorrelationStatVariableClause[i][j]=0;
+            posCorrelationStatClauseVariable[j][i]=0;
         }
     }
     
@@ -241,23 +255,24 @@ void SAT::init(){
         State* s = new State(numvariable);
         s->randomize();
         Output* o = update(s);
-        int* data = o->getData();
         cout << "Output tostring " << o->toString() << endl ;
         for(int j=0;j<numclause;j++){
-            if(data[j]==1)
+            if(o->get(j)==1)
                 signalProbabilityStat[j]++;
         }
         for(int j=0;j<numvariable;j++){
             for(int k=0;k<numOccurence[j];k++){
                 int clause = abs(occurrence[j][k]);
-                cout << "clause=" << clause << endl ;
-                cout << "data=" << data[clause] << endl ;
-                if( data[ clause ] == 1 ){
-                    causalityStat[j][clause]++;
-                } //else{causalityStat[j][clause]--;}
+                if( s->get(j) == o->get(clause)){ //corrolation of 0-0 and 1-1
+                    correlationStatVariableClause[j][clause]++;
+                    correlationStatClauseVariable[clause][j]++;
+                    if(s->get(j)==1){
+                        posCorrelationStatVariableClause[j][clause]++;
+                        posCorrelationStatClauseVariable[clause][j]++;
+                    }
+                }
             }
         }
-        
         
         delete s;
         delete o;
@@ -268,7 +283,10 @@ void SAT::init(){
     }
     for(int i=0;i<numvariable;i++){
         for(int j=0;j<numclause;j++){
-            causalityStat[i][j]/= trainingSamples;
+            correlationStatVariableClause[i][j]/= trainingSamples;
+            correlationStatClauseVariable[j][i]/= trainingSamples;
+            posCorrelationStatVariableClause[i][j]/= trainingSamples;
+            posCorrelationStatClauseVariable[j][i]/= trainingSamples;
         }
     }
     
@@ -279,11 +297,83 @@ void SAT::init(){
         cout << "var " << i << " " ;
         for(int j=0;j<numOccurence[i];j++){
             int clause = abs(occurrence[i][j]);
-            cout << causalityStat[i][clause] << " ,";
+            cout << "(" << clause << ") " ;
+            cout << correlationStatVariableClause[i][clause] << "(" << posCorrelationStatVariableClause[i][clause]  << ") ";
         }
         cout << endl ;
     }
 
+    for(int i=0;i<numclause;i++){
+        cout << "clause " << i << " " ;
+        for(int j=0;j<size[i];j++){
+            
+            int var = abs(clause[i][j]);
+            cout << "("<< var << ") " ;
+            cout << correlationStatClauseVariable[i][var] << "(" << posCorrelationStatClauseVariable[i][var] << ")    ";
+        }
+        cout << endl ;
+    }
+    
+    
+    
+}
+
+//Selects should return which bit to flip in the state
+int SAT::select(Node * node){
+    string strategy;       config->getParameter("param.strategy", &strategy);
+    if( strategy.compare("walksat")==0){
+        return -1;
+    }else if(strategy.compare("frequentist")==0){
+        //We have to answer two qeustions:
+        //1. Which clause C we want to turn satisfy at this iteration? Which is the easiest?
+        //2. Which bit X to flip in order to satisfy C (and probably unsatisfy some other clauses).
+        cout << "frequentist strategy 1" << endl ;
+        int flipClause=-1;
+        for(int i=0;i<numclause;i++){
+            if(node->getOutput()->get(i)==0){
+                if(flipClause==-1){
+                    flipClause=i;
+                }else{
+                    //Select a clause with highest signal probability
+                    if(signalProbabilityStat[i] > signalProbabilityStat[flipClause]){
+                        flipClause=i;
+                    }
+                }
+            }
+        }
+        
+        cout << "flip clause=" << flipClause << endl;
+        int max=0;
+        double maxCorrolation=0;
+        
+        for(int i=0;i<size[flipClause]; i++){
+            if(maxCorrolation<posCorrelationStatClauseVariable[flipClause][i]){
+                maxCorrolation=posCorrelationStatClauseVariable[flipClause][i];
+                max=i;
+            }
+        }
+        int flipBit = abs(clause[flipClause][max]);
+        cout << "flip bit=" << flipBit << endl ;
+        return flipBit;
+    }else if(strategy.compare("bayesian")==0){
+        int flipClause=-1;
+        int flipBit=0;
+        
+        for(int i=0;i<numclause;i++){
+            if(node->getOutput()->get(i)==0){
+                for(int j=0;j<size[i];j++){
+                    //compute some sort of bayesian
+                    
+                }
+            }
+            
+        }
+        
+        return flipBit;
+    }else{
+        int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
+        return flipBit;
+    }
 }
 
 void SAT::solve(){
@@ -305,19 +395,20 @@ void SAT::solve(){
     while( !satisfiableAssignmentFound && iter<maxIterations ){
         //1. generate a new goal output
         Output* goal = new Output(numclause);
-        goal->randomize();
-        cout << goal->toString() << endl ;
+        double goalBias= 0.5+0.5*(double)iter/double(maxIterations);
+        goal->randomize( goalBias );
+        cout << "goal=" << goal->toString() << "    (bias)=" << goalBias << endl ;
 
         //2. find the nearest outout to the goal
         Output* nearestOutput = search(goal);
-        cout << nearestOutput->toString() << endl ;
+        cout << "near=" << nearestOutput->toString() << endl ;
         
         //3. Find the state corresponding to the nearest output
         State* nearestState = nearestOutput->getState( rand()%nearestOutput->getStateSize() );
         Node* nearestNode = nearestState->getNode();
         
         //4. Pick which bit to flip in the corresponding state
-        int flipBit = rand()%nearestState->getSize();
+        int flipBit = select(nearestNode);
         Node* newNode = flip(nearestNode, flipBit);
         
         g->addNode(newNode, nearestNode);

@@ -2,3 +2,4 @@ const.maxVar=10000
 const.maxClause=10000
 const.maxIterations=100
 const.null=0
+param.strategy=bayesian

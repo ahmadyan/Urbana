@@ -54,9 +54,23 @@ void Object::reset(){
         data[i]=0;
 }
 
+//assigns a random bit-vector to data
 void Object::randomize(){
     for(int i=0;i<size;i++){
         data[i] = rand()%2;
+    }
+}
+
+//assigns a biased random bit-vector to data, the probability of each bit being 1 is p.
+void Object::randomize(double p){
+    if (p<0 || p>1)
+        cout << "error in random number generation with bias" << endl ;
+    for(int i=0;i<size;i++){
+        double x = (double)rand()/INT_MAX;
+        if(x<p)
+            data[i]=1;
+        else
+            data[i]=0;
     }
 }
 

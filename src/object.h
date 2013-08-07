@@ -27,5 +27,6 @@ public:
     int getSize();
     void reset();
     void randomize();
+    void randomize(double);
     string toString();
 };

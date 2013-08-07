@@ -28,13 +28,17 @@ class SAT{
     
     //statistics variables
     double* signalProbabilityStat;
-    double** causalityStat;
-
+    double** posCorrelationStatVariableClause;
+    double** posCorrelationStatClauseVariable;
+    double** correlationStatVariableClause;
+    double** correlationStatClauseVariable;
+    
 public:
     SAT(Configuration*);
     ~SAT();
     void init();
     void solve();
+    int select(Node*);
     Output* search(Output*);
     Output* update(State* state);
     Node* flip(Node*, int);
