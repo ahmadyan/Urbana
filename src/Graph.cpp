@@ -1,28 +1,45 @@
 #include "Graph.h"
-
-Graph::Graph(){
-    
+#include <boost/graph/graphviz.hpp>
+GraphFacade::GraphFacade(){
+    Graph g;    
 }
 
-Graph::~Graph(){
-    
+GraphFacade::~GraphFacade(){
 }
 
-void Graph::addRoot(Node* root){
-    nodes.push_back(root);
-    root->setNodeNumber(-1);
+// Adds the new node
+void GraphFacade::add(Node* v){
+    if(!v->getGraphFlag()){ //If this node has not been already stored in the grpah
+        nodes.push_back(v);
+        v->setNodeNumber(getSize()-1);
+        Vertex_t vertex = boost::add_vertex(v, g);
+        v->setVertex(vertex);
+    }
 }
 
-void Graph::addNode(Node* node, Node* parent){
-    nodes.push_back(node);
-    node->setNodeNumber(getSize()-1);
-    parents.push_back(parent->getNodeNumber());
+//Adds node v to the graph,
+//We assume that node u has already been added to the grpah (The grpahFlag is set and the u->vertex is not null).
+void GraphFacade::add(Node* v, Node* u){
+    add(v);
+    add(u);
+    // Add edge between u and v
+    Edge_t edge;
+    bool edgeExists;
+    boost::tie(edge, edgeExists) = boost::edge(v->getVertex() , u->getVertex(), g); // check if edge allready exist 
+    if(!edgeExists)
+        boost::add_edge(v->getVertex()  , u->getVertex(), g);
 }
 
-int Graph::getSize(){
+int GraphFacade::getSize(){
     return nodes.size();
 }
 
-Node* Graph::getNode(int i){
+Node* GraphFacade::getNode(int i){
     return nodes[i];
+}
+
+void GraphFacade::toString(){
+    cout << "\n-- graphviz output START --" << endl;
+    boost::write_graphviz(cout, g);
+    cout << "\n-- graphviz output END --" << endl;
 }

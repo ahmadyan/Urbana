@@ -5,11 +5,10 @@
 #include "config.h"
 #include "utility.h"
 #include "SAT.h"
-
-#include "Output.h"
 using namespace std;
 
 int main(int argc,char *argv[]){
+    srand((int)time(0));
     Configuration* config = new Configuration("config");
     parse_parameters(argc, argv, config);
     SAT* sat = new SAT(config);

@@ -1,9 +1,17 @@
-//
-//  VPTree.cpp
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 8/12/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
-
 #include "VPTree.h"
+
+VintagePointTree::VintagePointTree(){
+
+}
+
+VintagePointTree::~VintagePointTree(){
+    
+}
+ 
+void VintagePointTree::insert(Object* node){
+    root=node;
+}
+
+Object* VintagePointTree::search(int* data){
+    return root;
+}

@@ -1,14 +1,38 @@
-//
-//  database.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 8/12/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
+#pragma once
 
-#ifndef __treeSAT__database__
-#define __treeSAT__database__
+#include <vector>
+#include <boost/intrusive/avl_set.hpp>
+#include <algorithm>
+#include "State.h"
+#include "object.h"
+#include "Output.h"
+#include "Node.h"
+#include "VPTree.h"
 
-#include <iostream>
+class Database{
+    std::vector<Node*> nodes;
+    std::vector<Output*> outputs;
+    std::vector<State*> states;
+    
+    boost::intrusive::avltree<State> stateAVL; // Binary search tree is used for fast exact search (O(log n))
+    VintagePointTree outputVPT;   // Vintage Point tree is used for fast nearest search (O(log d))
 
-#endif /* defined(__treeSAT__database__) */
+    void insert(State*);
+    void insert(Output*);
+public:
+    
+    Database();
+    ~Database();
+    
+    void insert(Node* node);
+    void toString();
+    int numberOfStates();
+    int numberOfOutputs();
+    int size();
+    
+    State* getState(int i);     // quick state lookup, O(1)
+    State* getState(int*);      // searches for the state with given data, O(log n)
+    Output* getOutput(int i);   // Quick output lookup, O(1)
+    
+    Node* operator[](const int) throw (const char*);
+};

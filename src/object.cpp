@@ -3,17 +3,26 @@
 int Object::objectCount = 0 ;
 
 Object::Object(){
-    id = generateObjectID() ;
+    dbFlag=false;
+    nullObject=true;
+    //id = generateObjectID() ;
 }
 
 Object::Object(int n){
-    id = generateObjectID() ;
-    size=n;
-    data=new int[n];
+    dbFlag=false;
+    if(n<=0){
+        nullObject=true;
+    }else{
+        nullObject=false;
+        id = generateObjectID() ;
+        size=n;
+        data=new int[n];
+    }
 }
 
 Object::~Object(){
-    delete data;
+    if(!nullObject)
+        delete data;
 }
     
 int Object::generateObjectID(){
@@ -80,4 +89,16 @@ string Object::toString(){
         ss << data[i] ;
     }
     return ss.str();
+}
+
+bool Object::null(){
+    return nullObject;
+}
+
+void Object::setDBFlag(bool d){
+    dbFlag=d;
+}
+
+bool Object::getDBFlag(){
+    return dbFlag;
 }

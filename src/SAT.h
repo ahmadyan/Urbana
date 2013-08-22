@@ -6,6 +6,7 @@
 #include "State.h"
 #include "Graph.h"
 #include "config.h"
+#include "database.h"
 using namespace std;
 
 class SAT{
@@ -13,12 +14,11 @@ class SAT{
     int numclause;
 
     Configuration* config;
-    vector<Output*> exploredOutputs;
-    vector<State*> exploredStates;
-    Graph* g;
+    Database* db; 
+    GraphFacade* g;
     
     int** clause;                   // clauses to be satisfied indexed as clause[clause_num][literal_num]
-    int** occurrence;	// where each literal occurs indexed as occurrence[literal][occurrence_num]
+    int** occurrence;               // where each literal occurs indexed as occurrence[literal][occurrence_num]
 
     
     int* size;             // length of each clause

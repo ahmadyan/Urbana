@@ -1,14 +1,10 @@
-//
-//  Edge.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 8/21/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
+#pragma once
 
-#ifndef __treeSAT__Edge__
-#define __treeSAT__Edge__
-
-#include <iostream>
-
-#endif /* defined(__treeSAT__Edge__) */
+class Edge{
+private:
+    int bit;
+public:
+    Edge(int);
+    void setBit(int);
+    int getBit();
+};

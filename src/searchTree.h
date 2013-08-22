@@ -1,14 +1,10 @@
-//
-//  searchTree.h
-//  treeSAT
-//
-//  Created by Adel Ahmadyan on 8/9/13.
-//  Copyright (c) 2013 Adel Ahmadyan. All rights reserved.
-//
+#pragma once
+#include "object.h"
 
-#ifndef __treeSAT__searchTree__
-#define __treeSAT__searchTree__
-
-#include <iostream>
-
-#endif /* defined(__treeSAT__searchTree__) */
+class SearchTree{
+protected:
+    Object* root;
+public:
+    virtual void insert(Object*)=0;
+    virtual Object* search(int*)=0;
+};

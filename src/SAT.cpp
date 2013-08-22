@@ -12,6 +12,7 @@ SAT::SAT(Configuration* conf){
 	string inputFileName;       config->getParameter("param.inputfilename", &inputFileName);
     int MAXVAR = 1000;         config->getParameter("const.maxVar", &MAXVAR);
     int MAXCLAUSE = 1000;       config->getParameter("const.maxClause", &MAXCLAUSE);
+    db = new Database();
     
     int lastc;
 	int nextc;
@@ -173,6 +174,7 @@ Output* SAT::update(State* state){
         }
     }
     
+    
     Output* output = new Output(numclause);
     for(int i=0;i<numclause;i++){
         output->set(i, 0);
@@ -199,26 +201,39 @@ int distance(Output* source, Output* target){
 //This needs some serious work, this is the most naive way of search.
 Output* SAT::search(Output* goal){
     int minimumDistance = 9999;
-    Output* result = exploredOutputs[0];
-    for(int i=0;i<exploredOutputs.size();i++){
-        if(distance(goal, exploredOutputs[i]) < minimumDistance ){
-            result = exploredOutputs[i];
+    Output* result = db->getOutput(0);
+    for(int i=0;i< db->numberOfOutputs();i++){
+        if(distance(goal, db->getOutput(i)) < minimumDistance ){
+            result = db->getOutput(i);
         }
     }
     return result;
 }
 
-//needs optimization
 Node* SAT::flip(Node* node, int flipbit){
-    State* state = new State(node->getState());
-    state->set(flipbit, (state->get(flipbit)==0)? 1 : 0 );
-    Output* output = update(state);
-    Node* flippedNode = new Node(state, output);
-    
-    exploredStates.push_back(state);
-    exploredOutputs.push_back(output);
-    
-    return flippedNode;
+    //First, construct the flipped state
+    int* data = new int[node->getState()->getSize()]();
+    for(int i=0;i<node->getState()->getSize();i++){
+        data[i] = node->getState()->get(i);
+    }
+    data[flipbit] = (data[flipbit]==0)?1:0;
+    //Then, search for the given state, have we reached this state before?
+    State* s = db->getState(data);
+    if(s->null()){
+        delete s;
+        //we explored a new state
+        State* state = new State(node->getState()->getSize());
+        state->setData(data);
+        state->setMask(flipbit, 1);
+        Output* output = update(state);
+        Node* flippedNode = new Node(state, output);
+        return flippedNode;
+    }else{
+        //this state is already explored, make the link and mask bits
+        s->setMask(flipbit, 1);
+        //return the previous node
+        return s->getNode();
+    }
 }
 
 //The initial training part of the algorithm, we later update the algorithm using the statistics
@@ -255,7 +270,6 @@ void SAT::init(){
         State* s = new State(numvariable);
         s->randomize();
         Output* o = update(s);
-        cout << "Output tostring " << o->toString() << endl ;
         for(int j=0;j<numclause;j++){
             if(o->get(j)==1)
                 signalProbabilityStat[j]++;
@@ -363,10 +377,8 @@ int SAT::select(Node * node){
             if(node->getOutput()->get(i)==0){
                 for(int j=0;j<size[i];j++){
                     //compute some sort of bayesian
-                    
                 }
             }
-            
         }
         
         return flipBit;
@@ -379,27 +391,26 @@ int SAT::select(Node * node){
 void SAT::solve(){
     bool satisfiableAssignmentFound = false;
     int iter = 0;
-    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);
-
-    g = new Graph();
-    
+    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=1000;
+    g = new GraphFacade();
     //Add a random root state to the graph
     State* initialState = new State(numvariable);
     initialState->randomize();
     Output* initialOutput = update(initialState);
-    exploredStates.push_back(initialState);
-    exploredOutputs.push_back(initialOutput);
     Node* root = new Node(initialState, initialOutput);
-    g->addRoot(root);
-    
+    db->insert(root);
+    g->add(root);
+
     while( !satisfiableAssignmentFound && iter<maxIterations ){
         //1. generate a new goal output
         Output* goal = new Output(numclause);
         double goalBias= 0.5+0.5*(double)iter/double(maxIterations);
         goal->randomize( goalBias );
         cout << "goal=" << goal->toString() << "    (bias)=" << goalBias << endl ;
-
-        //2. find the nearest outout to the goal
+        // todo: check if we already reached the goal.
+        
+        
+        //2. find the nearest output to the goal
         Output* nearestOutput = search(goal);
         cout << "near=" << nearestOutput->toString() << endl ;
         
@@ -411,11 +422,13 @@ void SAT::solve(){
         int flipBit = select(nearestNode);
         Node* newNode = flip(nearestNode, flipBit);
         
-        g->addNode(newNode, nearestNode);
+        if(!newNode->getDBFlag())
+            db->insert(newNode);
+        g->add(newNode, nearestNode);
+        
         cout << "current state=" << newNode->getState()->toString() << "  --> " << newNode->getOutput()->toString() << endl ;
         //5. Add the new generated state and the output to the graph
-        
-        
+    
         //6. Check for satisfiability
         if(newNode->isSatisfiable()){
             cout << "found a satisfiable assigment" << endl ;
@@ -427,89 +440,12 @@ void SAT::solve(){
         iter++;
     }
     
+    int* data = new int[numvariable];
+    db->getState(data);
+    cout << "[info] Urbana execution finished." << endl ;
+    cout << "[info] Total iterations =" << iter << endl ;
+    cout << "[info] State space coverage = " << db->numberOfStates() << " / 2^" << numvariable << endl ;
+    cout << "[info] Output clause space coverage = " << db->numberOfOutputs() << " / 2^" << numclause << endl ;
+    //g->toString();
+    
 }
-/*
-
-void init(char initfile[], int initoptions){
-	printf("[adel-dbg] Init: numclauses:%d numatoms%d\n", numclause, numatom);
-	int i;
-	int j;
-	int thetruelit;
-	FILE * infile;
-	int lit;
-    
-	for(i = 0;i < numclause;i++)
-		numtruelit[i] = 0;
-	numfalse = 0;
-    
-	for(i = 1;i < numatom+1;i++){
-		changed[i] = -BIG;
-		breakcount[i] = 0;
-		makecount[i] = 0;
-	}
-    
-	if (initfile[0] && initoptions!=INIT_PARTIAL){
-		for(i = 1;i < numatom+1;i++)
-			atom[i] = 0;
-	}else{
-		for(i = 1;i < numatom+1;i++)
-			atom[i] = random()%2;
-	}
-    
-	if (initfile[0]){
-		if ((infile = fopen(initfile, "r")) == NULL){
-			fprintf(stderr, "Cannot open %s\n", initfile);
-			exit(1);
-		}
-		i=0;
-		while (fscanf(infile, " %i", &lit)==1){
-			i++;
-			if (ABS(lit)>numatom){
-				fprintf(stderr, "Bad init file %s\n", initfile);
-				exit(1);
-			}
-			if (lit<0) atom[-lit]=0;
-			else atom[lit]=1;
-		}
-		if (i==0){
-			fprintf(stderr, "Bad init file %s\n", initfile);
-			exit(1);
-		}
-		fclose(infile);
-	}
-    
-	// Initialize breakcount and makecount in the following:
-	for(i = 0;i < numclause;i++)
-	{
-		for(j = 0;j < size[i];j++)
-		{
-			if((clause[i][j] > 0) == atom[ABS(clause[i][j])])
-			{
-				numtruelit[i]++;
-				thetruelit = clause[i][j];
-			}
-		}
-		if(numtruelit[i] == 0)
-		{
-			wherefalse[i] = numfalse;
-			false[numfalse] = i;
-			numfalse++;
-			for(j = 0;j < size[i];j++){
-				makecount[ABS(clause[i][j])]++;
-			}
-		}
-		else if (numtruelit[i] == 1)
-		{
-			breakcount[ABS(thetruelit)]++;
-		}
-	}
-    
-	if (hamming_flag){
-		hamming_distance = calc_hamming_dist(atom, hamming_target, numatom);
-		fprintf(hamming_fp, "0 %i\n", hamming_distance);
-	}
-	
-	if(rrtflag) rrt_init();
-}
-
-*/
