@@ -2,6 +2,8 @@
 #include "Node.h"
 #include <vector>
 
+#include <functional>
+using namespace std::placeholders;
 using namespace std;
 
 #define MAXLENGTH 500
@@ -137,7 +139,7 @@ int SAT::GetNumberOfClauses(){
 }
 
 // This function recieves the state as input & computes the outpus and some statistics
-Output* SAT::update(State* state){
+Output* SAT::adjust(State* state){
     // Initialize breakcount and makecount in the following:
     int* numtruelit = new int[numclause];		// number of true literals in each clause
     int* wherefalse = new int[numclause];		// where each clause is listed in false
@@ -199,18 +201,30 @@ int distance(Output* source, Output* target){
 }
 
 //This needs some serious work, this is the most naive way of search.
+//Todo: add a weight factor to the search, if we search a node once, counter++
+//Successfull searches (searched that resulted in clauses with higher positives) vs unsuccessfull searches
+//if we pick one node a lot, next time, lower the chance of picking it
+//or among nodes with distance <=k, pick a node with lowest pick-up. 
 Output* SAT::search(Output* goal){
     int minimumDistance = 9999;
     Output* result = db->getOutput(0);
-    for(int i=0;i< db->numberOfOutputs();i++){
-        if(distance(goal, db->getOutput(i)) < minimumDistance ){
-            result = db->getOutput(i);
+    for(int i=0;i< db->outputSize();i++){
+        if(!db->getOutput(i)->getMask()){
+            if(distance(goal, db->getOutput(i)) < minimumDistance ){
+                result = db->getOutput(i);
+            }
         }
+    }
+    if(result->getMask()){
+        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
     }
     return result;
 }
+int nnnn=0;
 
 Node* SAT::flip(Node* node, int flipbit){
+    cout << "############ Flipping..." << endl;
+    update(node, flipbit);
     //First, construct the flipped state
     int* data = new int[node->getState()->getSize()]();
     for(int i=0;i<node->getState()->getSize();i++){
@@ -219,19 +233,24 @@ Node* SAT::flip(Node* node, int flipbit){
     data[flipbit] = (data[flipbit]==0)?1:0;
     //Then, search for the given state, have we reached this state before?
     State* s = db->getState(data);
+    cout << "s?null  " << s->null() << endl ;
     if(s->null()){
+        nnnn++;
+        cout << "Creating a new node..." << nnnn << endl ;
         delete s;
         //we explored a new state
         State* state = new State(node->getState()->getSize());
         state->setData(data);
-        state->setMask(flipbit, 1);
-        Output* output = update(state);
+        Output* output = adjust(state);
         Node* flippedNode = new Node(state, output);
+        update(flippedNode, flipbit);
         return flippedNode;
     }else{
-        //this state is already explored, make the link and mask bits
-        s->setMask(flipbit, 1);
-        //return the previous node
+        cout << "returning previous node" << endl ;
+        cout << s->getID() << endl;
+        cout << s->getNode()->getState()->getID() << endl;
+        //this state is already explored
+        update(s->getNode(), flipbit);
         return s->getNode();
     }
 }
@@ -245,9 +264,6 @@ void SAT::init(){
     correlationStatClauseVariable = new double*[numclause];
     posCorrelationStatVariableClause = new double*[numvariable];
     posCorrelationStatClauseVariable = new double*[numclause];
-    
-    
-    // posCorrelationStatVariableClause
     
     for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause];
     for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable];
@@ -269,7 +285,7 @@ void SAT::init(){
     for(int i=0;i<trainingSamples;i++){
         State* s = new State(numvariable);
         s->randomize();
-        Output* o = update(s);
+        Output* o = adjust(s);
         for(int j=0;j<numclause;j++){
             if(o->get(j)==1)
                 signalProbabilityStat[j]++;
@@ -327,76 +343,187 @@ void SAT::init(){
         }
         cout << endl ;
     }
+}
+
+//Updates the mask bits, call this function when we flipped the bit^th in the node->state
+void SAT::update(Node* node, int bit){
+    //There are four mask that needs to be updated in order
+    //The first mask is the stateMask. stateMask[i] indicates whether or not the bit i has already been flipped.
+    //Therefore we never flip a variable i where stateMask[i]==1
+    node->setStateMask(bit, true);
     
+    //2. output mask in the node class
+    //The second mask is the outputMask. Every output is connected to a limited number of variables (defined in int** clause).
+    //For outputMask[i]==1 iff forall j in clause[i]. stateMask[j]==1
+    //When the outputMask[i] is one, there is no reason to pick that node anymore.
+    //Think: when outputMask[i] is one + output[i]=0: is this node unsatisfiable??
+    //2.1 find which output clauses the variable i affects
     
+    for(int i=0;i<numOccurence[bit];i++){
+        int cl=occurrence[bit][i];
+        // Now for clause cl, list all the variables that effect it, if all of them where masked, then there is no use in picking this clause.
+        // so let's mask clause cl.
+        bool mask=true;
+        for(int j=0;j<size[cl];j++){
+            int var=abs(clause[cl][j]);
+            if(!node->getStateMask(var)){
+                mask=false;
+            }
+        }
+        node->setOutputMask(cl, mask);
+    }
+    
+    //3. The third mask is the node mask which indicates whether or not this node is unsatisfiable.
+    // If the nodeMask is one, we cannot reach a satisfiable solution
+    // within one bit-flip of this node. Therefore we exclude this node from searching for nearest node.
+    // nodemask is 1 iff forall j where output[j]=0. outputmask[j]=1
+    bool nodemask=true;
+    for(int i=0;i<numclause;i++){
+        if(!node->getOutputMask(i) && (node->getOutput()->get(i)==0))
+            nodemask=false; //if there exists a clause where both output and mask is false
+    }
+    node->setNodeMask(nodemask);
+    
+    //4. output mask in output class
+    //A very nasty pattern is happening here.
+    //Update mask should be used in the output class, however, I cannot access the Node's mask data in the output
+    //class because of forward declared type. Hence this loophole happend. todo: fix this
+    node->getOutput()->setMask(true);
+    for(int i=0;i<node->getOutput()->getStateSize();i++){
+        //get node from the state
+        if(!node->getOutput()->getState(i)->getNode()->getNodeMask()){ //wait, whaaat?
+            node->getOutput()->setMask(false);
+            return;
+        }
+    }
+}
+
+int SAT::pick_naive(Node* node){
+    //step 1: pick which clause to flip
+    int flipClause=-1;
+    for(int i=0;i<numclause;i++){
+        if( node->getOutputMask(i)==false && node->getOutput()->get(i)==0   ){
+            flipClause=i;
+        }
+    }
+    if(flipClause==-1) cout << "This shouldn't happen!, the node should already have been masked" << endl ;
+    
+    //Step 2: pick which variable to flip
+    for(int i=0;i<size[flipClause]; i++){
+        int flipBit = abs( clause[flipClause][i]);
+        if( node->getStateMask(flipBit)==false ){
+            return flipBit;
+        }
+    }
+    cout << "This shouldn't happend! all variables are masked, but the clause itself isn't masked" << endl ;
+    return -1;
+}
+
+int SAT::pick_walksat2(Node* node){
     
 }
 
-//Selects should return which bit to flip in the state
-int SAT::select(Node * node){
-    string strategy;       config->getParameter("param.strategy", &strategy);
-    if( strategy.compare("walksat")==0){
-        return -1;
-    }else if(strategy.compare("frequentist")==0){
-        //We have to answer two qeustions:
-        //1. Which clause C we want to turn satisfy at this iteration? Which is the easiest?
-        //2. Which bit X to flip in order to satisfy C (and probably unsatisfy some other clauses).
-        cout << "frequentist strategy 1" << endl ;
-        int flipClause=-1;
-        for(int i=0;i<numclause;i++){
-            if(node->getOutput()->get(i)==0){
-                if(flipClause==-1){
+int SAT::pick_walksat1(Node* node){
+    
+}
+
+int SAT::pick_frequencist(Node* node){
+    //We have to answer two qeustions:
+    //1. Which clause C we want to turn satisfy at this iteration? Which is the easiest?
+    //2. Which bit X to flip in order to satisfy C (and probably unsatisfy some other clauses).
+    cout << "frequentist strategy 1" << endl ;
+    int flipClause=-1;
+    for(int i=0;i<numclause;i++){
+        if(node->getOutputMask(i)==false && node->getOutput()->get(i)==0){
+            if(flipClause==-1){
+                flipClause=i;
+            }else{
+                //Select a clause with highest signal probability
+                if(signalProbabilityStat[i] > signalProbabilityStat[flipClause]){
                     flipClause=i;
-                }else{
-                    //Select a clause with highest signal probability
-                    if(signalProbabilityStat[i] > signalProbabilityStat[flipClause]){
-                        flipClause=i;
-                    }
                 }
             }
         }
-        
-        cout << "flip clause=" << flipClause << endl;
-        int max=0;
-        double maxCorrolation=0;
-        
-        for(int i=0;i<size[flipClause]; i++){
-            if(maxCorrolation<posCorrelationStatClauseVariable[flipClause][i]){
-                maxCorrolation=posCorrelationStatClauseVariable[flipClause][i];
+    }
+    
+    cout << "flip clause=" << flipClause <<  "   [" << node->getOutputMask(flipClause) << "]" <<endl;
+    
+    int max=-1;
+    double maxCorrolation=-1;
+    
+    cout << "clause mask:" ;
+    for(int i=0;i<size[flipClause]; i++){
+        cout << node->getStateMask(abs(clause[flipClause][i])) ;
+    }
+    cout << endl ;
+    for(int i=0;i<size[flipClause]; i++){
+        if(node->getStateMask(abs(clause[flipClause][i]))==false){
+            if(max==-1){
                 max=i;
-            }
-        }
-        int flipBit = abs(clause[flipClause][max]);
-        cout << "flip bit=" << flipBit << endl ;
-        return flipBit;
-    }else if(strategy.compare("bayesian")==0){
-        int flipClause=-1;
-        int flipBit=0;
-        
-        for(int i=0;i<numclause;i++){
-            if(node->getOutput()->get(i)==0){
-                for(int j=0;j<size[i];j++){
-                    //compute some sort of bayesian
+                maxCorrolation=posCorrelationStatClauseVariable[flipClause][i];
+            }else{
+                if(maxCorrolation<posCorrelationStatClauseVariable[flipClause][i]){
+                    maxCorrolation=posCorrelationStatClauseVariable[flipClause][i];
+                    max=i;
                 }
             }
         }
-        
-        return flipBit;
+    }
+    int flipBit = abs(clause[flipClause][max]);
+    cout << max << " flip bit=" << flipBit << "  ["<<node->getStateMask(flipBit)<<"]"<< endl ;
+    return flipBit;
+}
+
+int SAT::pick_bayesian(Node* node){
+    int flipClause=-1;
+    int flipBit=0;
+    
+    for(int i=0;i<numclause;i++){
+        if(node->getOutput()->get(i)==0){
+            for(int j=0;j<size[i];j++){
+                //compute some sort of bayesian
+            }
+        }
+    }
+    
+    return flipBit;
+}
+
+int SAT::pick_random(Node* node){
+    int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
+    return flipBit;
+}
+
+
+//Selects should return which bit to flip in the state
+int SAT::select(Node* node){
+    //auto pick = std::bind((this)::pick_naive, _1);
+    //return pick(node);
+    string strategy;       config->getParameter("param.strategy", &strategy);
+    if( strategy.compare("naive")==0){
+        return pick_naive(node);
+    }else if(strategy.compare("frequentist")==0){
+        return pick_frequencist(node);
+    }else if(strategy.compare("bayesian")==0){
+        return pick_bayesian(node);
+    }else if(strategy.compare("random")==0){
+        return pick_random(node);
     }else{
-        int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
-        return flipBit;
+        cout << "Undefined selection strategy" << endl;
+        return -1;
     }
 }
 
 void SAT::solve(){
     bool satisfiableAssignmentFound = false;
+    Node* solution; 
     int iter = 0;
-    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=1000;
+    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=5000;
     g = new GraphFacade();
     //Add a random root state to the graph
     State* initialState = new State(numvariable);
     initialState->randomize();
-    Output* initialOutput = update(initialState);
+    Output* initialOutput = adjust(initialState);
     Node* root = new Node(initialState, initialOutput);
     db->insert(root);
     g->add(root);
@@ -406,33 +533,35 @@ void SAT::solve(){
         Output* goal = new Output(numclause);
         double goalBias= 0.5+0.5*(double)iter/double(maxIterations);
         goal->randomize( goalBias );
-        cout << "goal=" << goal->toString() << "    (bias)=" << goalBias << endl ;
         // todo: check if we already reached the goal.
-        
-        
+
         //2. find the nearest output to the goal
         Output* nearestOutput = search(goal);
-        cout << "near=" << nearestOutput->toString() << endl ;
         
         //3. Find the state corresponding to the nearest output
-        State* nearestState = nearestOutput->getState( rand()%nearestOutput->getStateSize() );
+        State* nearestState;
+        for(int i=0;i<nearestOutput->getStateSize();i++){
+            if (!nearestOutput->getState(i)->getNode()->getNodeMask()){
+                nearestState=nearestOutput->getState(i);
+                break;
+            }
+        }
+        //State* nearestState = nearestOutput->getState( rand()%nearestOutput->getStateSize() );
+
         Node* nearestNode = nearestState->getNode();
-        
         //4. Pick which bit to flip in the corresponding state
         int flipBit = select(nearestNode);
         Node* newNode = flip(nearestNode, flipBit);
         
         if(!newNode->getDBFlag())
             db->insert(newNode);
-        g->add(newNode, nearestNode);
         
-        cout << "current state=" << newNode->getState()->toString() << "  --> " << newNode->getOutput()->toString() << endl ;
         //5. Add the new generated state and the output to the graph
+        g->add(newNode, nearestNode);
     
         //6. Check for satisfiability
         if(newNode->isSatisfiable()){
-            cout << "found a satisfiable assigment" << endl ;
-            cout << newNode->getState()->toString() << " --> " << newNode->getOutput()->toString() << endl ;
+            solution=newNode;
             satisfiableAssignmentFound=true;
         }
         //7. update statistics
@@ -442,10 +571,28 @@ void SAT::solve(){
     
     int* data = new int[numvariable];
     db->getState(data);
+    if(satisfiableAssignmentFound){
+        cout << "found a satisfiable assigment" << endl ;
+        cout << solution->getState()->toString() << endl ;
+    }else{
+        cout << "No satisfiable assigment found." << endl ;
+    }
     cout << "[info] Urbana execution finished." << endl ;
     cout << "[info] Total iterations =" << iter << endl ;
-    cout << "[info] State space coverage = " << db->numberOfStates() << " / 2^" << numvariable << endl ;
-    cout << "[info] Output clause space coverage = " << db->numberOfOutputs() << " / 2^" << numclause << endl ;
+    cout << "[info] State space coverage = " << db->stateSize() << " / 2^" << numvariable << endl ;
+    cout << "[info] Output clause space coverage = " << db->outputSize() << " / 2^" << numclause << endl ;
     //g->toString();
     
+    
+    cout << " Mask information" << endl ;
+    cout << "Node Mask: " ;
+    for(int i=0;i<db->stateSize();i++){
+        cout << db->getState(i)->getNode()->getNodeMask() ;
+    }
+    cout << endl ;
+    cout << "Clau Mask: " ;
+    for(int i=0;i<db->outputSize();i++){
+        cout << db->getOutput(i)->getMask()  ;
+    }
+    cout << endl;
 }

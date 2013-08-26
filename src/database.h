@@ -26,8 +26,8 @@ public:
     
     void insert(Node* node);
     void toString();
-    int numberOfStates();
-    int numberOfOutputs();
+    int stateSize();
+    int outputSize();
     int size();
     
     State* getState(int i);     // quick state lookup, O(1)

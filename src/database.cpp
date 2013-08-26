@@ -56,11 +56,11 @@ int Database::size(){
     return (int)(nodes.size());
 }
 
-int Database::numberOfStates(){
+int Database::stateSize(){
     return (int)(states.size());
 }
 
-int Database::numberOfOutputs(){
+int Database::outputSize(){
     return (int)(outputs.size());
 }
 

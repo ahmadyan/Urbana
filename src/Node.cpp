@@ -6,9 +6,14 @@ Node::Node(State* s, Output* o){
     nodeNumber=-1;
     dbFlag=false;
     graphFlag=false;
+    
     s->setOutput(o);
     s->setNode(this);
     o->addState(s);
+    
+    nodeMask=false;
+    stateMask = new bool[s->getSize()]();
+    outputMask = new bool[o->getSize()]();
 }
 
 int Node::getNodeNumber(){
@@ -53,4 +58,28 @@ void Node::setVertex(Vertex_t v){
 
 Vertex_t Node::getVertex(){
     return vertex;
+}
+
+bool Node::getNodeMask(){
+    return nodeMask;
+}
+
+bool Node::getStateMask(int i){
+    return stateMask[i];
+}
+
+bool Node::getOutputMask(int i){
+    return outputMask[i];
+}
+
+void Node::setNodeMask(bool value){
+    nodeMask = value;
+}
+
+void Node::setStateMask(int i, bool value){
+    stateMask[i]=value;
+}
+
+void Node::setOutputMask(int i, bool value){
+    outputMask[i] = value;
 }

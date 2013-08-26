@@ -4,6 +4,7 @@
 // There is a one to one relation between State class and Clauses class, but not vice versa
 class Output;
 class Node;
+
 class State: public Object{
     Output* output;
     Node* node;
@@ -16,6 +17,4 @@ public:
     Output* getOutput();
     Node* getNode();
     void setNode(Node*);
-    int getMask(int);
-    void setMask(int, int);
 };

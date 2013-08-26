@@ -10,6 +10,8 @@
 using namespace std;
 
 class SAT{
+
+    
     int numvariable;
     int numclause;
 
@@ -40,9 +42,19 @@ public:
     void solve();
     int select(Node*);
     Output* search(Output*);
-    Output* update(State* state);
+    Output* adjust(State* state);
     Node* flip(Node*, int);
     int GetNumberOfVariables();
     int GetNumberOfClauses();
-
+    void update(Node*, int);
+    
+    
+    int pick_naive(Node* node);
+    int pick_walksat2(Node* node);
+    int pick_walksat1(Node* node);
+    int pick_frequencist(Node* node);
+    int pick_bayesian(Node* node);
+    int pick_random(Node* node);
+    
+    //int (*pickcode[6])(Node*) = {pick_naive, pick_walksat2, pick_walksat1, pick_frequencist, pick_bayesian, pick_random};
 };

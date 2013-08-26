@@ -1,6 +1,8 @@
 #include "Output.h"
 
 Output::Output(int size):Object(size){
+    mask=false;
+    distanceFactor=1;
 }
 
 Output::~Output(){
@@ -29,4 +31,20 @@ bool Output::isSatisfiable(){
             answer=false;
     }
     return answer;
+}
+
+bool Output::getMask(){
+    return mask;
+}
+
+void Output::setMask(bool value){
+    mask=value;
+}
+
+double Output::getDistanceFactor(){
+    return distanceFactor;
+}
+
+void Output::setDistanceFactor(double d){
+    distanceFactor=d;
 }
