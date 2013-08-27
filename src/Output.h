@@ -25,4 +25,6 @@ public:
     void updateMask();
     double getDistanceFactor();
     void setDistanceFactor(double);
+    void hit();
+    void miss();
 };

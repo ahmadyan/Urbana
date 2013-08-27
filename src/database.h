@@ -33,6 +33,6 @@ public:
     State* getState(int i);     // quick state lookup, O(1)
     State* getState(int*);      // searches for the state with given data, O(log n)
     Output* getOutput(int i);   // Quick output lookup, O(1)
-    
+    Output* search(Output*);
     Node* operator[](const int) throw (const char*);
 };

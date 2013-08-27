@@ -2,4 +2,4 @@ const.maxVar=10000
 const.maxClause=10000
 const.maxIterations=2000
 const.null=0
-param.strategy=frequentist
+param.strategy=best

@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+//#include <utility>
 
 #include "Output.h"
 #include "State.h"
@@ -10,8 +11,6 @@
 using namespace std;
 
 class SAT{
-
-    
     int numvariable;
     int numclause;
 
@@ -19,7 +18,7 @@ class SAT{
     Database* db; 
     GraphFacade* g;
     
-    int** clause;                   // clauses to be satisfied indexed as clause[clause_num][literal_num]
+    std::pair<int, bool>** clause;                   // clauses to be satisfied indexed as clause[clause_num][literal_num]
     int** occurrence;               // where each literal occurs indexed as occurrence[literal][occurrence_num]
 
     
@@ -41,20 +40,23 @@ public:
     void init();
     void solve();
     int select(Node*);
+    
+    int getClause(int, int);
+    bool getSign(int, int);
     Output* search(Output*);
     Output* adjust(State* state);
     Node* flip(Node*, int);
     int GetNumberOfVariables();
     int GetNumberOfClauses();
     void update(Node*, int);
-    
+    void updateNodeStat(Node* node);    //update node statistics such as makecount/ break count, etc.
     
     int pick_naive(Node* node);
     int pick_walksat2(Node* node);
-    int pick_walksat1(Node* node);
+    int pick_best(Node* node);
     int pick_frequencist(Node* node);
     int pick_bayesian(Node* node);
     int pick_random(Node* node);
-    
+
     //int (*pickcode[6])(Node*) = {pick_naive, pick_walksat2, pick_walksat1, pick_frequencist, pick_bayesian, pick_random};
 };

@@ -1,9 +1,6 @@
 #include "SAT.h"
 #include "Node.h"
 #include <vector>
-
-#include <functional>
-using namespace std::placeholders;
 using namespace std;
 
 #define MAXLENGTH 500
@@ -54,7 +51,7 @@ SAT::SAT(Configuration* conf){
     }
     
 	size = new int[numclause];
-	clause = new int*[numclause];
+	clause = new pair<int,bool>*[numclause];
     occurrence = new int*[numvariable];
 	int lit;
     
@@ -87,10 +84,14 @@ SAT::SAT(Configuration* conf){
 			}
 		}while(lit != 0);
         
-        clause[i] = new int[size[i]];
+        clause[i] = new pair<int, bool>[size[i]];
         for(int j=0;j<tmp.size();j++){
-            //in cnf format, the vars start from 1, in c++ we index them at 0, so -1 for the var and +1 for the negation. 
-            clause[i][j] = tmp[j]>0? tmp[j]-1 : tmp[j]+1;
+            //in cnf format, the vars start from 1, in c++ we index them at 0, so -1 for the var and +1 for the negation.
+            //bugfix: the 0 does not differentiate between +-0, so I added a sign to the clause.
+            //wasn't it easier just to reindex everything as 1?
+            int lit = abs(tmp[j])-1;
+            bool sign = tmp[j]>0;
+            clause[i][j] = make_pair(lit, sign);
         }
 	}
     
@@ -99,7 +100,7 @@ SAT::SAT(Configuration* conf){
      //           cout << clause[i] << endl ;
         cout << size[i] << endl ;
         for(int j=0;j<size[i];j++){
-            cout << clause[i][j] << " " ;
+            cout << clause[i][j].first << " (" << clause[i][j].second << ") " ;
         }
         cout << endl ;
     }
@@ -119,7 +120,7 @@ SAT::SAT(Configuration* conf){
     
     for(int i = 0;i < numclause;i++){
 		for(int j = 0;j < size[i];j++){
-            int var = abs(clause[i][j]);
+            int var = getClause(i, j);
             occurrence[var][ occtmp[var]] = i;
             occtmp[var]++;
 		}
@@ -130,6 +131,14 @@ SAT::SAT(Configuration* conf){
 SAT::~SAT(){
 }
 
+int SAT::getClause(int i, int j){
+    return clause[i][j].first;
+}
+
+bool SAT::getSign(int i, int j){
+    return clause[i][j].second;
+}
+
 int SAT::GetNumberOfVariables(){
     return numvariable;
 }
@@ -138,51 +147,13 @@ int SAT::GetNumberOfClauses(){
     return numclause;
 }
 
-// This function recieves the state as input & computes the outpus and some statistics
+//This function recieves the state as input & computes the outpus and some statistics
 Output* SAT::adjust(State* state){
-    // Initialize breakcount and makecount in the following:
-    int* numtruelit = new int[numclause];		// number of true literals in each clause
-    int* wherefalse = new int[numclause];		// where each clause is listed in false
-    int* falseClause= new int[numclause];		// clauses which are false
-    int* breakcount = new int[numvariable];     // number of clauses that become unsat if var if flipped
-    int* makecount = new int[numvariable];      // number of clauses that become sat if var if flipped
-
-    int numfalse=0;                               // number of false clauses
-    
-    for(int i = 0;i < numclause;i++){
-        numtruelit[i] = 0;
-        wherefalse[i] = 0;
-    }
-    
-    int thetruelit;
-    
-    // check these codes, probably buggy
-    for(int i=0;i<numclause;i++){
-        for(int j = 0;j<size[i];j++){
-            if((clause[i][j] > 0) ==  state->get(abs(clause[i][j]))){
-                numtruelit[i]++;
-                thetruelit = clause[i][j];
-            }
-        }
-        if(numtruelit[i] == 0){
-            wherefalse[i] = numfalse;
-            falseClause[numfalse] = i;
-            numfalse++;
-            for(int j = 0;j < size[i];j++){
-                makecount[abs(clause[i][j])]++;
-            }
-        }else if (numtruelit[i] == 1){
-            breakcount[abs(thetruelit)]++;
-        }
-    }
-    
-    
     Output* output = new Output(numclause);
     for(int i=0;i<numclause;i++){
         output->set(i, 0);
         for(int j=0;j<size[i];j++){
-            if(((clause[i][j]>0) && state->get(abs(clause[i][j]))==1 )   ||
-               ((clause[i][j]<0) && state->get(abs(clause[i][j]))==0 )   ){
+            if( getSign(i, j)==state->get(getClause(i, j)) ){
                 output->set(i, 1);
             }
         }
@@ -200,30 +171,7 @@ int distance(Output* source, Output* target){
     return distance;
 }
 
-//This needs some serious work, this is the most naive way of search.
-//Todo: add a weight factor to the search, if we search a node once, counter++
-//Successfull searches (searched that resulted in clauses with higher positives) vs unsuccessfull searches
-//if we pick one node a lot, next time, lower the chance of picking it
-//or among nodes with distance <=k, pick a node with lowest pick-up. 
-Output* SAT::search(Output* goal){
-    int minimumDistance = 9999;
-    Output* result = db->getOutput(0);
-    for(int i=0;i< db->outputSize();i++){
-        if(!db->getOutput(i)->getMask()){
-            if(distance(goal, db->getOutput(i)) < minimumDistance ){
-                result = db->getOutput(i);
-            }
-        }
-    }
-    if(result->getMask()){
-        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
-    }
-    return result;
-}
-int nnnn=0;
-
 Node* SAT::flip(Node* node, int flipbit){
-    cout << "############ Flipping..." << endl;
     update(node, flipbit);
     //First, construct the flipped state
     int* data = new int[node->getState()->getSize()]();
@@ -233,10 +181,7 @@ Node* SAT::flip(Node* node, int flipbit){
     data[flipbit] = (data[flipbit]==0)?1:0;
     //Then, search for the given state, have we reached this state before?
     State* s = db->getState(data);
-    cout << "s?null  " << s->null() << endl ;
     if(s->null()){
-        nnnn++;
-        cout << "Creating a new node..." << nnnn << endl ;
         delete s;
         //we explored a new state
         State* state = new State(node->getState()->getSize());
@@ -244,14 +189,39 @@ Node* SAT::flip(Node* node, int flipbit){
         Output* output = adjust(state);
         Node* flippedNode = new Node(state, output);
         update(flippedNode, flipbit);
+        updateNodeStat(flippedNode);
         return flippedNode;
     }else{
-        cout << "returning previous node" << endl ;
-        cout << s->getID() << endl;
-        cout << s->getNode()->getState()->getID() << endl;
         //this state is already explored
         update(s->getNode(), flipbit);
         return s->getNode();
+    }
+}
+
+//update node statistics such as makecount/ break count, etc.
+//This code is borrowd from WalkSAT v50.
+//This can also be done incrementally, given a previous node and the flipped literal.
+//TODO: implement the incremental update
+void SAT::updateNodeStat(Node* node){
+    int thetruelit=0;
+	// Initialize breakcount and makecount in the following:
+	for(int i = 0;i < numclause;i++){
+        for(int j = 0;j < size[i];j++){
+            if( getSign(i, j)==node->getState()->get(getClause(i, j)) ){
+                node->numtruelit[i]++;
+                thetruelit = getClause(i, j);
+            }
+		}
+        if(node->numtruelit[i] == 0){   //There is no true literal in i^th clause, so its unsatisfied.
+            node->wherefalse[i] = node->numfalse;
+            node->falseClause[node->numfalse] = i;
+            node->numfalse++;
+            for(int j = 0;j < size[i];j++){
+                node->makecount[getClause(i, j)]++;
+            }
+		}else if (node->numtruelit[i] == 1){
+            node->breakcount[abs(thetruelit)]++;
+		}
     }
 }
 
@@ -337,7 +307,7 @@ void SAT::init(){
         cout << "clause " << i << " " ;
         for(int j=0;j<size[i];j++){
             
-            int var = abs(clause[i][j]);
+            int var = getClause(i, j);
             cout << "("<< var << ") " ;
             cout << correlationStatClauseVariable[i][var] << "(" << posCorrelationStatClauseVariable[i][var] << ")    ";
         }
@@ -365,7 +335,7 @@ void SAT::update(Node* node, int bit){
         // so let's mask clause cl.
         bool mask=true;
         for(int j=0;j<size[cl];j++){
-            int var=abs(clause[cl][j]);
+            int var= getClause(cl, j);
             if(!node->getStateMask(var)){
                 mask=false;
             }
@@ -410,7 +380,7 @@ int SAT::pick_naive(Node* node){
     
     //Step 2: pick which variable to flip
     for(int i=0;i<size[flipClause]; i++){
-        int flipBit = abs( clause[flipClause][i]);
+        int flipBit = getClause(flipClause, i);
         if( node->getStateMask(flipBit)==false ){
             return flipBit;
         }
@@ -422,16 +392,44 @@ int SAT::pick_naive(Node* node){
 int SAT::pick_walksat2(Node* node){
     
 }
-
-int SAT::pick_walksat1(Node* node){
+#define RANDOM_MASK 0xFF
+//This is the same strategy as walksat/best
+//(C) WalkSAT
+int SAT::pick_best(Node* node){
+    int numbreak;
+	int best[MAXLENGTH];
+	register int numbest;
+	register int bestvalue;
+	register int var;
     
+	int tofix = node->falseClause[random()%node->numfalse];
+	int clausesize = size[tofix];
+	numbest = 0;
+	bestvalue = 999999999;
+    
+	for (int i=0; i< clausesize; i++){
+        var = getClause(tofix, i);
+        numbreak = node->breakcount[var];
+        if (numbreak<=bestvalue){
+            if (numbreak<bestvalue) numbest=0;
+            bestvalue = numbreak;
+            best[numbest++] = var;
+        }
+	}
+    int numerator = 50;	/* make random flip with numerator/denominator frequency */
+    int denominator = 100;
+    int adjusted_numerator = numerator * (RANDOM_MASK + 1) / denominator;
+	if (bestvalue>0 && ((random() & RANDOM_MASK) < adjusted_numerator))
+        return getClause(tofix, random()%clausesize);
+    
+	if (numbest == 1) return best[0];
+	return best[random()%numbest];
 }
 
 int SAT::pick_frequencist(Node* node){
     //We have to answer two qeustions:
     //1. Which clause C we want to turn satisfy at this iteration? Which is the easiest?
     //2. Which bit X to flip in order to satisfy C (and probably unsatisfy some other clauses).
-    cout << "frequentist strategy 1" << endl ;
     int flipClause=-1;
     for(int i=0;i<numclause;i++){
         if(node->getOutputMask(i)==false && node->getOutput()->get(i)==0){
@@ -446,18 +444,12 @@ int SAT::pick_frequencist(Node* node){
         }
     }
     
-    cout << "flip clause=" << flipClause <<  "   [" << node->getOutputMask(flipClause) << "]" <<endl;
-    
     int max=-1;
     double maxCorrolation=-1;
     
-    cout << "clause mask:" ;
     for(int i=0;i<size[flipClause]; i++){
-        cout << node->getStateMask(abs(clause[flipClause][i])) ;
-    }
-    cout << endl ;
-    for(int i=0;i<size[flipClause]; i++){
-        if(node->getStateMask(abs(clause[flipClause][i]))==false){
+
+        if(node->getStateMask(getClause(flipClause, i))==false){
             if(max==-1){
                 max=i;
                 maxCorrolation=posCorrelationStatClauseVariable[flipClause][i];
@@ -469,8 +461,7 @@ int SAT::pick_frequencist(Node* node){
             }
         }
     }
-    int flipBit = abs(clause[flipClause][max]);
-    cout << max << " flip bit=" << flipBit << "  ["<<node->getStateMask(flipBit)<<"]"<< endl ;
+    int flipBit = getClause(flipClause,max);
     return flipBit;
 }
 
@@ -508,6 +499,8 @@ int SAT::select(Node* node){
         return pick_bayesian(node);
     }else if(strategy.compare("random")==0){
         return pick_random(node);
+    }else if(strategy.compare("best")==0){
+        return pick_best(node);
     }else{
         cout << "Undefined selection strategy" << endl;
         return -1;
@@ -518,17 +511,21 @@ void SAT::solve(){
     bool satisfiableAssignmentFound = false;
     Node* solution; 
     int iter = 0;
-    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=5000;
+    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=1000;
     g = new GraphFacade();
     //Add a random root state to the graph
     State* initialState = new State(numvariable);
     initialState->randomize();
     Output* initialOutput = adjust(initialState);
     Node* root = new Node(initialState, initialOutput);
+    updateNodeStat(root);
     db->insert(root);
     g->add(root);
 
     while( !satisfiableAssignmentFound && iter<maxIterations ){
+        if(iter%10==0){
+            cout << iter << endl;
+        }
         //1. generate a new goal output
         Output* goal = new Output(numclause);
         double goalBias= 0.5+0.5*(double)iter/double(maxIterations);
@@ -536,7 +533,7 @@ void SAT::solve(){
         // todo: check if we already reached the goal.
 
         //2. find the nearest output to the goal
-        Output* nearestOutput = search(goal);
+        Output* nearestOutput = db->search(goal);
         
         //3. Find the state corresponding to the nearest output
         State* nearestState;
@@ -577,22 +574,9 @@ void SAT::solve(){
     }else{
         cout << "No satisfiable assigment found." << endl ;
     }
+    
     cout << "[info] Urbana execution finished." << endl ;
     cout << "[info] Total iterations =" << iter << endl ;
     cout << "[info] State space coverage = " << db->stateSize() << " / 2^" << numvariable << endl ;
     cout << "[info] Output clause space coverage = " << db->outputSize() << " / 2^" << numclause << endl ;
-    //g->toString();
-    
-    
-    cout << " Mask information" << endl ;
-    cout << "Node Mask: " ;
-    for(int i=0;i<db->stateSize();i++){
-        cout << db->getState(i)->getNode()->getNodeMask() ;
-    }
-    cout << endl ;
-    cout << "Clau Mask: " ;
-    for(int i=0;i<db->outputSize();i++){
-        cout << db->getOutput(i)->getMask()  ;
-    }
-    cout << endl;
 }

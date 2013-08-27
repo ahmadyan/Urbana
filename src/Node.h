@@ -15,6 +15,7 @@ class Node{
     bool dbFlag;
     bool graphFlag; //indicates whether this node has been stored in the graph, eq. the vertex is not null.
     
+   
     
     //Masks:                We use mask to avoid repeating the same interations in order to prune the graph
     bool* stateMask;         //The first mask is the stateMask. stateMask[i] indicates whether or not the bit i has already been flipped.
@@ -26,10 +27,18 @@ class Node{
     bool nodeMask;           //Indicates whether or not this node is unsatisfiable. If the nodeMask is one, we cannot reach a satisfiable solution
                             //within one bit-flip of this node. Therefore we exclude this node from searching for nearest node.
                             //nodemask is 1 iff forall j where output[j]=0. outputmask[j]=1
-    
-    
 public:
+    int* numtruelit;		// number of true literals in each clause
+    int* wherefalse;		// where each clause is listed in false
+    int* falseClause;		// clauses which are false
+    int* breakcount;     // number of clauses that become unsat if var if flipped
+    int* makecount;      // number of clauses that become sat if var if flipped
+    int numfalse;                               // number of false clauses
+    
+    
+    
     Node(State*, Output*);
+    ~Node();
     int getNodeNumber();
     void setNodeNumber(int);
     
@@ -49,4 +58,5 @@ public:
     void setNodeMask(bool);
     void setStateMask(int, bool);
     void setOutputMask(int, bool);
+    string toString();
 };

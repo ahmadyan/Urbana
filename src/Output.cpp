@@ -48,3 +48,11 @@ double Output::getDistanceFactor(){
 void Output::setDistanceFactor(double d){
     distanceFactor=d;
 }
+
+void Output::hit(){
+    distanceFactor *= 0.7 ;
+}
+
+void Output::miss(){
+    distanceFactor *= 1.3;
+}

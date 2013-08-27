@@ -1,7 +1,6 @@
 #include "database.h"
 
 Database::Database(){
-    
 }
 
 Database::~Database(){
@@ -17,7 +16,6 @@ void Database::insert(Node* node){
 
 //Insert a new state to the database, Complexity: O(log n)
 void Database::insert(State* state){
-    cout << "DB-flag is " << state->getDBFlag() << " " << state->getID()<< endl ;
     if(!state->getDBFlag()){
         stateAVL.insert_unique(*state);
         states.push_back(state);
@@ -35,16 +33,37 @@ void Database::insert(Output* output){
 }
 
 State* Database::getState(int* data){
-    cout << "Searching" << endl ;for(int i=0;i<5;i++){ cout << data[i] ; } cout << endl ;
     boost::intrusive::avltree<State>::iterator it = stateAVL.find(data, Object());
     if( it != stateAVL.end() ){
-        cout << "Object found: " << (&*it)->toString() << endl ;
         return &*it;
     }else{
-        cout << "Object not found" << endl ;
         return new State();
     }
 }
+
+
+//This needs some serious work, this is the most naive way of search.
+//Todo: add a weight factor to the search, if we search a node once, counter++
+//Successfull searches (searched that resulted in clauses with higher positives) vs unsuccessfull searches
+//if we pick one node a lot, next time, lower the chance of picking it
+//or among nodes with distance <=k, pick a node with lowest pick-up.
+Output* Database::search(Output* goal){
+    int minimumDistance = 9999;
+    Output* result = getOutput(0);
+    for(int i=0;i< outputSize();i++){
+        if(!getOutput(i)->getMask()){
+            if( getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i)) < minimumDistance ){
+                result = getOutput(i);
+            }
+        }
+    }
+    result->miss();
+    if(result->getMask()){
+        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
+    }
+    return result;
+}
+
 
 void Database::toString(){
     for(boost::intrusive::avltree<State>::iterator it = stateAVL.begin(); it!= stateAVL.end(); it++){
