@@ -50,9 +50,9 @@ void Output::setDistanceFactor(double d){
 }
 
 void Output::hit(){
-    distanceFactor *= 0.7 ;
+    distanceFactor *= 0.9 ;
 }
 
 void Output::miss(){
-    distanceFactor *= 1.3;
+    distanceFactor *= 1.1;
 }

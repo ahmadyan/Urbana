@@ -8,13 +8,17 @@
 #include "Graph.h"
 #include "config.h"
 #include "database.h"
+#include "Result.h"
 using namespace std;
 
 class SAT{
+    int iter;
     int numvariable;
     int numclause;
+    int maxIterations;
 
     Configuration* config;
+    Result* result;
     Database* db; 
     GraphFacade* g;
     
@@ -34,11 +38,16 @@ class SAT{
     double** correlationStatVariableClause;
     double** correlationStatClauseVariable;
     
+    double** probability;
+    
 public:
     SAT(Configuration*);
+    SAT(SAT*);
     ~SAT();
+    int* goal();
     void init();
     void solve();
+    Result* getResult();
     int select(Node*);
     
     int getClause(int, int);
@@ -53,10 +62,10 @@ public:
     
     int pick_naive(Node* node);
     int pick_walksat2(Node* node);
-    int pick_best(Node* node);
+    pair<int, int> pick_best(Node* node);
     int pick_frequencist(Node* node);
     int pick_bayesian(Node* node);
     int pick_random(Node* node);
-
+    
     //int (*pickcode[6])(Node*) = {pick_naive, pick_walksat2, pick_walksat1, pick_frequencist, pick_bayesian, pick_random};
 };

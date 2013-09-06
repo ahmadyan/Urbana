@@ -3,25 +3,41 @@
 #include <vector>
 #include <boost/intrusive/avl_set.hpp>
 #include <algorithm>
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#include <assert.h>
+
 #include "State.h"
 #include "object.h"
 #include "Output.h"
 #include "Node.h"
-#include "VPTree.h"
+#include "config.h"
 
+namespace mvp{
+    extern "C"{
+        #include "mvptree.h"
+    }
+}
 class Database{
+    int MVP_BRANCHFACTOR;
+    int MVP_PATHLENGTH;
+    int MVP_LEAFCAP;
     std::vector<Node*> nodes;
     std::vector<Output*> outputs;
     std::vector<State*> states;
     
     boost::intrusive::avltree<State> stateAVL; // Binary search tree is used for fast exact search (O(log n))
-    VintagePointTree outputVPT;   // Vintage Point tree is used for fast nearest search (O(log d))
-
+    mvp::MVPTree* outputVPT;    // Vintage Point tree is used for fast nearest search (O(log d))
     void insert(State*);
     void insert(Output*);
 public:
     
-    Database();
+    Database(Configuration*);
     ~Database();
     
     void insert(Node* node);
@@ -29,6 +45,7 @@ public:
     int stateSize();
     int outputSize();
     int size();
+    static float hamming_distance(mvp::MVPDP *pointA, mvp::MVPDP *pointB);
     
     State* getState(int i);     // quick state lookup, O(1)
     State* getState(int*);      // searches for the state with given data, O(log n)

@@ -1,6 +1,14 @@
 #include "database.h"
 
-Database::Database(){
+Database::Database(Configuration* config){
+    config->getParameter("param.mvp.MVP_BRANCHFACTOR", &MVP_BRANCHFACTOR);
+    config->getParameter("param.mvp.MVP_PATHLENGTH", &MVP_PATHLENGTH);
+    config->getParameter("param.mvp.MVP_LEAFCAP", &MVP_LEAFCAP);
+    cout << "Booting DB" << endl;
+    cout << MVP_BRANCHFACTOR << " " << MVP_PATHLENGTH << " " << MVP_LEAFCAP << endl ;
+    mvp::CmpFunc distance_func = hamming_distance;
+    outputVPT = mvp::mvptree_alloc(NULL, distance_func, MVP_BRANCHFACTOR, MVP_PATHLENGTH, MVP_LEAFCAP);
+    
 }
 
 Database::~Database(){
@@ -26,8 +34,23 @@ void Database::insert(State* state){
 //Insert a new output to the database, Complexity: O(1)
 void Database::insert(Output* output){
     if(!output->getDBFlag()){
+        //insert the output into the vector for direct access, just in case
         outputs.push_back(output);
-        outputVPT.insert(output);
+        
+        //insert the output to the MVT tree for nearest node queries.
+        //Creating the MVT node
+        mvp::MVPDP* node = new mvp::MVPDP();
+        node->datalen = output->getSize();
+        node->data = output;
+        char scratch[32];
+        snprintf(scratch, 32, "point%llu", output->getID());
+        node->id = strdup(scratch);
+        cout << node->id << "   " << output->toString() << endl ;
+        
+        int err = mvp::mvptree_add(outputVPT, &node, 1);
+        assert(err == mvp::MVP_SUCCESS);
+        
+       // outputVPT.insert(output);
         output->setDBFlag(true);
     }
 }
@@ -48,7 +71,42 @@ State* Database::getState(int* data){
 //if we pick one node a lot, next time, lower the chance of picking it
 //or among nodes with distance <=k, pick a node with lowest pick-up.
 Output* Database::search(Output* goal){
+    mvp::MVPError err;
+    float radius=7;
+    unsigned int nbresults;
+    
+    mvp::MVPDP* node = new mvp::MVPDP();
+    node->datalen = goal->getSize();
+    node->data = goal;
+    char scratch[32];
+    snprintf(scratch, 32, "point%llu", goal->getID());
+    node->id = strdup(scratch);
+    cout << node->id << "   " << goal->toString() << endl ;
+    
+
+    unsigned int knearest = 10;
+    
+    mvp::MVPDP **results = mvp::mvptree_retrieve(outputVPT, node, knearest, radius, &nbresults, &err);
     int minimumDistance = 9999;
+
+    for (int i=0;i<nbresults;i++){
+        fprintf(stdout,"  FOUND --> (%d) %s  : ", i, results[i]->id);
+        cout << ((Output*)(results[i]->data))->toString() << endl ;
+   
+        
+        Output* out = ((Output*)(results[i]->data));
+        if(!out->getMask()){
+            return out;
+        }
+        
+                
+         }
+    assert(results);
+    assert(err == mvp::MVP_SUCCESS);
+    
+    
+
+    /*    int minimumDistance = 9999;
     Output* result = getOutput(0);
     for(int i=0;i< outputSize();i++){
         if(!getOutput(i)->getMask()){
@@ -62,8 +120,8 @@ Output* Database::search(Output* goal){
         cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
     }
     return result;
-}
-
+*/
+ }
 
 void Database::toString(){
     for(boost::intrusive::avltree<State>::iterator it = stateAVL.begin(); it!= stateAVL.end(); it++){
@@ -95,3 +153,14 @@ Node* Database::operator[](const int i) throw (const char*){
     if(i<0 || i>nodes.size() ) throw "Invalid access to database" ;
     else return nodes[i];
 }
+
+float Database::hamming_distance(mvp::MVPDP *pointA, mvp::MVPDP *pointB){
+    if (!pointA || !pointB) {
+        return -1.0f;
+    }
+    if (!pointA->data || !pointB->data) {
+        return -1.0f;
+    }
+    return ((Output*)(pointA->data))->distance( (Output*)(pointB->data));
+}
+

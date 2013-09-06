@@ -11,7 +11,7 @@ SAT::SAT(Configuration* conf){
 	string inputFileName;       config->getParameter("param.inputfilename", &inputFileName);
     int MAXVAR = 1000;         config->getParameter("const.maxVar", &MAXVAR);
     int MAXCLAUSE = 1000;       config->getParameter("const.maxClause", &MAXCLAUSE);
-    db = new Database();
+    db = new Database(config);
     
     int lastc;
 	int nextc;
@@ -126,9 +126,36 @@ SAT::SAT(Configuration* conf){
 		}
 	}
     delete occtmp;
+    result = new Result();
+}
+
+SAT::SAT(SAT* copy){
+    config=copy->config;
+    db = new Database(config);
+    numvariable=copy->numvariable;
+    numclause=copy->numclause;
+    
+    numOccurence = copy->numOccurence; // number of times each literal occurs
+    numOccurencePos = copy->numOccurencePos;
+    numOccurenceNeg = copy->numOccurenceNeg;
+	size = copy->size;
+	clause = copy->clause;
+    occurrence = copy->occurrence;
+    
+    signalProbabilityStat = copy->signalProbabilityStat;
+    posCorrelationStatVariableClause = copy->posCorrelationStatVariableClause;
+    posCorrelationStatClauseVariable = copy->posCorrelationStatClauseVariable;
+    correlationStatVariableClause = copy->correlationStatVariableClause;
+    correlationStatClauseVariable = copy->correlationStatClauseVariable;
+    
+    result = new Result();
 }
 
 SAT::~SAT(){
+}
+
+Result* SAT::getResult(){
+    return result;
 }
 
 int SAT::getClause(int i, int j){
@@ -162,13 +189,7 @@ Output* SAT::adjust(State* state){
 }
 
 int distance(Output* source, Output* target){
-    int distance=0;
-    for(int i=0;i<source->getSize(); i++){
-        if(source->get(i)!=target->get(i)){
-            distance++;
-        }
-    }
-    return distance;
+    return source->distance(target);
 }
 
 Node* SAT::flip(Node* node, int flipbit){
@@ -228,29 +249,20 @@ void SAT::updateNodeStat(Node* node){
 //The initial training part of the algorithm, we later update the algorithm using the statistics
 //genereated from the algorithm itself
 void SAT::init(){
-    int trainingSamples=100;
+    int trainingSamples=100; config->getParameter("param.training", &trainingSamples);
+    //probability = new double*[numclause];
+
     signalProbabilityStat = new double[numclause];
     correlationStatVariableClause = new double*[numvariable];
     correlationStatClauseVariable = new double*[numclause];
     posCorrelationStatVariableClause = new double*[numvariable];
     posCorrelationStatClauseVariable = new double*[numclause];
     
-    for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause];
-    for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable];
-    for(int i=0;i<numvariable;i++) posCorrelationStatVariableClause[i]=new double[numclause];
-    for(int i=0;i<numclause;i++) posCorrelationStatClauseVariable[i]=new double[numvariable];
-    
-    for(int i=0;i<numclause;i++){
-        signalProbabilityStat[i]=0;
-    }
-    for(int i=0;i<numvariable;i++){
-        for(int j=0;j<numclause;j++){
-            correlationStatVariableClause[i][j]=0;
-            correlationStatClauseVariable[j][i]=0;
-            posCorrelationStatVariableClause[i][j]=0;
-            posCorrelationStatClauseVariable[j][i]=0;
-        }
-    }
+    for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause]();
+    for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable]();
+    for(int i=0;i<numvariable;i++) posCorrelationStatVariableClause[i]=new double[numclause]();
+    for(int i=0;i<numclause;i++) posCorrelationStatClauseVariable[i]=new double[numvariable]();
+    //for(int i=0;i<numclause;i++) probability[i] = new double[1 << size[i]]();
     
     for(int i=0;i<trainingSamples;i++){
         State* s = new State(numvariable);
@@ -273,6 +285,19 @@ void SAT::init(){
                 }
             }
         }
+       /*
+        for(int j=0;j<numclause;j++){
+            if(o->get(j) == 1){
+                int x=0;
+                for(int k=0;k<size[j];k++){
+                    if(s->get(k)==1){
+                        x++;//bug
+                    }
+                }
+                probability[j][x]++;
+            }
+        }*/
+        
         
         delete s;
         delete o;
@@ -289,6 +314,12 @@ void SAT::init(){
             posCorrelationStatClauseVariable[j][i]/= trainingSamples;
         }
     }
+    
+    //for(int i=0;i<numclause;i++){
+    //    for(int j=0;j<(1<<size[i]);j++){
+    //        probability[i][j] /= trainingSamples;
+    //    }
+    //}
     
     for(int i=0;i<numclause;i++){
         cout << "clause:" << i << " " << signalProbabilityStat[i] << endl;
@@ -392,10 +423,9 @@ int SAT::pick_naive(Node* node){
 int SAT::pick_walksat2(Node* node){
     
 }
-#define RANDOM_MASK 0xFF
 //This is the same strategy as walksat/best
 //(C) WalkSAT
-int SAT::pick_best(Node* node){
+pair<int, int> SAT::pick_best(Node* node){
     int numbreak;
 	int best[MAXLENGTH];
 	register int numbest;
@@ -403,6 +433,12 @@ int SAT::pick_best(Node* node){
 	register int var;
     
 	int tofix = node->falseClause[random()%node->numfalse];
+    //for(int i=0;i<numclause; i++){
+    //    if(!node->getOutputMask(i) && node->getOutput()->get(i)==0){ //false clause that is unmasked
+            //This is not random anymore
+    //    }
+    //}
+    
 	int clausesize = size[tofix];
 	numbest = 0;
 	bestvalue = 999999999;
@@ -411,19 +447,16 @@ int SAT::pick_best(Node* node){
         var = getClause(tofix, i);
         numbreak = node->breakcount[var];
         if (numbreak<=bestvalue){
-            if (numbreak<bestvalue) numbest=0;
-            bestvalue = numbreak;
-            best[numbest++] = var;
+            if(!node->getStateMask(var)){
+                if (numbreak<bestvalue) numbest=0;
+                bestvalue = numbreak;
+                best[numbest++] = var;
+            }
         }
 	}
-    int numerator = 50;	/* make random flip with numerator/denominator frequency */
-    int denominator = 100;
-    int adjusted_numerator = numerator * (RANDOM_MASK + 1) / denominator;
-	if (bestvalue>0 && ((random() & RANDOM_MASK) < adjusted_numerator))
-        return getClause(tofix, random()%clausesize);
-    
-	if (numbest == 1) return best[0];
-	return best[random()%numbest];
+    if(numbest==0) return make_pair(-1, bestvalue);
+	if (numbest == 1) return make_pair(best[0], bestvalue);
+	return make_pair(best[random()%numbest], bestvalue);
 }
 
 int SAT::pick_frequencist(Node* node){
@@ -480,17 +513,33 @@ int SAT::pick_bayesian(Node* node){
     return flipBit;
 }
 
+//We randomly select an unsatisfied claused and flip one of it's inputs
 int SAT::pick_random(Node* node){
-    int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
+    int tofix = node->falseClause[random()%node->numfalse];
+    int flipBit= getClause(tofix, random()%size[tofix]);
+    //int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
     return flipBit;
 }
 
 
 //Selects should return which bit to flip in the state
 int SAT::select(Node* node){
-    //auto pick = std::bind((this)::pick_naive, _1);
-    //return pick(node);
-    string strategy;       config->getParameter("param.strategy", &strategy);
+    pair<int, int> pick1 = pick_best(node);
+    int defaultCandidate = pick1.first;
+    
+    bool randomFlag;
+    double randomBias = 0.5;                    config->getParameter("param.randomBias", &randomBias);
+    if( (double)rand()/(double)RAND_MAX < randomBias )
+        randomFlag=true;
+    if(pick1.first==-1){ //no viable candidate
+        return pick_random(node);
+    }else if(pick1.second>0 && randomFlag){ //best strategy is going to break something,
+        return pick_random(node);
+    }else{ //pick best
+        return defaultCandidate;
+    }
+        
+    /*string strategy;       config->getParameter("param.strategy", &strategy);
     if( strategy.compare("naive")==0){
         return pick_naive(node);
     }else if(strategy.compare("frequentist")==0){
@@ -504,14 +553,56 @@ int SAT::select(Node* node){
     }else{
         cout << "Undefined selection strategy" << endl;
         return -1;
+    }*/
+}
+
+int* SAT::goal(){
+    
+    string strategy;       config->getParameter("param.bias", &strategy);
+    double goalBias=0.5;
+    if( strategy.compare("uniform")==0){
+        goalBias=0.5;
+    }else if(strategy.compare("fixed")==0){
+        goalBias= 0.5+0.5*(double)iter/double(maxIterations);
+    }else if(strategy.compare("adaptive")==0){
+        int period;       config->getParameter("param.biasPeriod", &period);
+        double rise=0.5; double fall=1-0.5;
+        int i=iter%period;   //1<i<200
+        if(i<= rise*period){
+            // we are in a rising period of bias, iteratively increase the bias toward the goal
+            goalBias = 0.5 + 0.5*(double)i/(rise*period);
+        }else{ //100<i<200
+            goalBias = 1 - 0.5*(double)(i-rise*period)/(fall*period);
+        }
+    }else if(strategy.compare("variable")==0){
+        double r = (double)rand()/(double)RAND_MAX;
+        if( r>0.1 ){
+            goalBias = 1 ;
+        //}else if (r>0.3){
+ //           goalBias = 0.75;
+        }else{
+            goalBias=0.5;
+        }
+    }else{
+        cout << "Uknown biasing strategy" << endl ;
     }
+
+    int* data = new int[numclause];
+    for(int i=0;i<numclause;i++){
+        double x = (double)rand()/INT_MAX;
+        if(x<goalBias)
+            data[i]=1;
+        else
+            data[i]=0;
+    }
+    return data;
 }
 
 void SAT::solve(){
     bool satisfiableAssignmentFound = false;
-    Node* solution; 
-    int iter = 0;
-    int maxIterations; config->getParameter("const.maxIterations", &maxIterations);     maxIterations=1000;
+    Node* solution;
+    iter=0;
+    config->getParameter("const.maxIterations", &maxIterations);
     g = new GraphFacade();
     //Add a random root state to the graph
     State* initialState = new State(numvariable);
@@ -527,13 +618,13 @@ void SAT::solve(){
             cout << iter << endl;
         }
         //1. generate a new goal output
-        Output* goal = new Output(numclause);
-        double goalBias= 0.5+0.5*(double)iter/double(maxIterations);
-        goal->randomize( goalBias );
+        Output* goalClause = new Output(numclause);
+
+        goalClause->randomize( goal() );
         // todo: check if we already reached the goal.
 
         //2. find the nearest output to the goal
-        Output* nearestOutput = db->search(goal);
+        Output* nearestOutput = db->search(goalClause);
         
         //3. Find the state corresponding to the nearest output
         State* nearestState;
@@ -569,9 +660,13 @@ void SAT::solve(){
     int* data = new int[numvariable];
     db->getState(data);
     if(satisfiableAssignmentFound){
+        result->success=true;
+        result->iterations=iter;
+        result->states=db->stateSize();
         cout << "found a satisfiable assigment" << endl ;
         cout << solution->getState()->toString() << endl ;
     }else{
+        result->success=false;
         cout << "No satisfiable assigment found." << endl ;
     }
     

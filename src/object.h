@@ -34,10 +34,12 @@ public:
     void reset();
     void randomize();
     void randomize(double);
+    void randomize(int*);
     string toString();
     bool null();
     void setDBFlag(bool);
     bool getDBFlag();
+    double distance(Object*);
     
     //Comparison operators.
     //Comparing object with another object

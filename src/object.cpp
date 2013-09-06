@@ -83,6 +83,11 @@ void Object::randomize(double p){
     }
 }
 
+void Object::randomize(int* d){
+    delete data;
+    data=d;
+}
+
 string Object::toString(){
     stringstream ss ;
     for(int i=0;i<size;i++){
@@ -101,4 +106,16 @@ void Object::setDBFlag(bool d){
 
 bool Object::getDBFlag(){
     return dbFlag;
+}
+
+//Computes the hamming distance between this and object v
+//Basically we can use any other distance function here, as long as they are metric.
+double Object::distance(Object* v){
+    double distance=0;
+    for(int i=0;i<v->getSize(); i++){
+        if(v->get(i)!=data[i]){
+            distance++;
+        }
+    }
+    return distance;
 }
