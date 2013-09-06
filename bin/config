@@ -1,5 +1,13 @@
 const.maxVar=10000
 const.maxClause=10000
-const.maxIterations=2000
+const.maxIterations=10000
+param.training=100
 const.null=0
 param.strategy=best
+param.bias=variable
+param.biasPeriod=1
+param.run=1
+param.randomBias=0.5
+param.mvp.MVP_BRANCHFACTOR=2
+param.mvp.MVP_PATHLENGTH=5
+param.mvp.MVP_LEAFCAP=25
