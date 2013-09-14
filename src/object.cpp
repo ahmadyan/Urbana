@@ -20,6 +20,14 @@ Object::Object(int n){
     }
 }
 
+Object::Object(int n, int* d){
+    dbFlag=false;
+    nullObject=false;
+    id = generateObjectID() ;
+    size=n;
+    data=d;
+}
+
 Object::~Object(){
     if(!nullObject)
         delete data;
@@ -37,6 +45,10 @@ void Object::setData(int* x){
     for(int i=0;i<size;i++){
         data[i] = x[i];
     }
+}
+
+void Object::setDataIntrusive(int* x){
+    data=x;
 }
 
 int* Object::getData(){

@@ -20,12 +20,14 @@ public:
     
     Object();
     Object(int n);
+    Object(int n, int* d);
     ~Object();
     
     static int generateObjectID();
     int getID();
     
     void setData(int*);
+    void setDataIntrusive(int* x);
     int* getData();
     int get(int);
     void set(int, int);

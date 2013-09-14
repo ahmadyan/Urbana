@@ -83,6 +83,7 @@ MVPDP* dp_alloc(MVPDataType type) {
 
 void dp_free(MVPDP *dp, MVPFreeFunc free_func) {
     if (dp) {
+        printf("Running free\n");
         if (dp->path) { free(dp->path); }
         if (free_func) {
             if (dp->id)    free_func(dp->id);
@@ -326,8 +327,7 @@ static MVPDP*** sort_points(MVPDP **points, unsigned int nbpoints, int sv1_pos, 
 
 /* Calculate distances for all points from given vantage point, vp, and
    assign that distance into each points path using the lvl parameter. */
-static int find_distance_range_for_vp(MVPDP **points, unsigned int nbpoints, MVPDP *vp,
-                                      MVPTree *tree, int lvl) {
+static int find_distance_range_for_vp(MVPDP **points, unsigned int nbpoints, MVPDP *vp, MVPTree *tree, int lvl) {
     if (!points || nbpoints == 0 || !vp || !tree || !tree->dist) {
         return -1;
     }
@@ -347,8 +347,7 @@ static int find_distance_range_for_vp(MVPDP **points, unsigned int nbpoints, MVP
     return error;
 }
 
-static Node* _mvptree_add(MVPTree *tree, Node *node, MVPDP **points, unsigned int nbpoints,
-                                                               MVPError *error, int lvl) {
+static Node* _mvptree_add(MVPTree *tree, Node *node, MVPDP **points, unsigned int nbpoints, MVPError *error, int lvl) {
     Node *new_node = node;
     if (nbpoints == 0) { return new_node; }
     if (!tree || lvl < 0 || !points) {
@@ -442,8 +441,7 @@ static Node* _mvptree_add(MVPTree *tree, Node *node, MVPDP **points, unsigned in
 
             for (i=0; i < tree->branchfactor; i++) {
                 /* for each bin */
-                if (find_distance_range_for_vp(bins[i], binlengths[i], new_node->internal.sv2,
-                                   tree, lvl+1) < 0) {
+                if (find_distance_range_for_vp(bins[i], binlengths[i], new_node->internal.sv2, tree, lvl+1) < 0) {
                     *error = MVP_NOSV2RANGE;
                     free_node(new_node);
                     for (j=0; j < tree->branchfactor; j++) { free(bins[j]); }
@@ -505,6 +503,7 @@ static Node* _mvptree_add(MVPTree *tree, Node *node, MVPDP **points, unsigned in
                 }
 
                 if (find_distance_range_for_vp(points,nbpoints,new_node->leaf.sv2,tree,lvl+1) < 0) {
+                    printf("Culprint line 3\n");
                     *error = MVP_NOSV2RANGE;
                     return new_node;
                 }
@@ -566,6 +565,7 @@ static Node* _mvptree_add(MVPTree *tree, Node *node, MVPDP **points, unsigned in
                 int j;
                 if (find_distance_range_for_vp(bins[i], binlengths[i],
                                                 new_node->internal.sv2, tree, lvl+1) < 0) {
+                    printf("Culprit line 4\n");
                     *error = MVP_NOSV2RANGE;
                     for (j=0; j < tree->branchfactor; j++) { free(bins[j]); }
                     free(bins);
@@ -634,9 +634,7 @@ MVPError mvptree_add(MVPTree *tree, MVPDP **points, unsigned int nbpoints) {
 }
 
 
-static
-MVPError _mvptree_retrieve(MVPTree *tree,Node *node,MVPDP *target, float radius, MVPDP** results,
-                                                          unsigned int *nbresults, int lvl) {
+static MVPError _mvptree_retrieve(MVPTree *tree,Node *node,MVPDP *target, float radius, MVPDP** results, unsigned int *nbresults, int lvl) {
     MVPError err = MVP_SUCCESS;
     int bf = tree->branchfactor;
     int lengthM1 = bf - 1;

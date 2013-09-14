@@ -1,3 +1,4 @@
+
 #include "SAT.h"
 #include "Node.h"
 #include <vector>
@@ -85,7 +86,7 @@ SAT::SAT(Configuration* conf){
 		}while(lit != 0);
         
         clause[i] = new pair<int, bool>[size[i]];
-        for(int j=0;j<tmp.size();j++){
+        for(int j=0;j<size[i];j++){ //bugfix from tmp.size() to size[i], in cases that the clause size are different (like intel)
             //in cnf format, the vars start from 1, in c++ we index them at 0, so -1 for the var and +1 for the negation.
             //bugfix: the 0 does not differentiate between +-0, so I added a sign to the clause.
             //wasn't it easier just to reindex everything as 1?
@@ -95,15 +96,15 @@ SAT::SAT(Configuration* conf){
         }
 	}
     
-    cout << "size of each clause:" << endl ;
+    /*
     for(int i=0;i<numclause;i++){
-     //           cout << clause[i] << endl ;
-        cout << size[i] << endl ;
+        cout << clause[i] << endl ;
+        cout << "C"<< i << " size:" << size[i] << endl ;
         for(int j=0;j<size[i];j++){
             cout << clause[i][j].first << " (" << clause[i][j].second << ") " ;
         }
         cout << endl ;
-    }
+    }*/
     
     
     // Populating the occurance matrix
@@ -119,7 +120,7 @@ SAT::SAT(Configuration* conf){
         occtmp[i]=0;
     
     for(int i = 0;i < numclause;i++){
-		for(int j = 0;j < size[i];j++){
+    	for(int j = 0;j < size[i];j++){
             int var = getClause(i, j);
             occurrence[var][ occtmp[var]] = i;
             occtmp[var]++;
@@ -132,7 +133,7 @@ SAT::SAT(Configuration* conf){
 SAT::SAT(SAT* copy){
     config=copy->config;
     db = new Database(config);
-    numvariable=copy->numvariable;
+    numvariable=copy->numvariable;  
     numclause=copy->numclause;
     
     numOccurence = copy->numOccurence; // number of times each literal occurs
@@ -176,22 +177,30 @@ int SAT::GetNumberOfClauses(){
 
 //This function recieves the state as input & computes the outpus and some statistics
 Output* SAT::adjust(State* state){
-    Output* output = new Output(numclause);
+    int* data = new int[numclause]();
     for(int i=0;i<numclause;i++){
-        output->set(i, 0);
+        data[i]=0;
         for(int j=0;j<size[i];j++){
             if( getSign(i, j)==state->get(getClause(i, j)) ){
-                output->set(i, 1);
+                data[i]=1;
             }
         }
     }
-    return output;
+    
+    Output* output = db->getOutput(data);
+    if(output->null()){
+        delete output;
+        return new Output(numclause, data);
+    }else{
+        return output;
+    }
 }
 
 int distance(Output* source, Output* target){
     return source->distance(target);
 }
 
+//todo: bug: two state may have the same output
 Node* SAT::flip(Node* node, int flipbit){
     update(node, flipbit);
     //First, construct the flipped state
@@ -208,6 +217,9 @@ Node* SAT::flip(Node* node, int flipbit){
         State* state = new State(node->getState()->getSize());
         state->setData(data);
         Output* output = adjust(state);
+        
+        //check if these output has been explored before (incase two state yields the same output)
+        //Output* o = db->getOutput();
         Node* flippedNode = new Node(state, output);
         update(flippedNode, flipbit);
         updateNodeStat(flippedNode);

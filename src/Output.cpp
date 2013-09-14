@@ -1,6 +1,15 @@
 #include "Output.h"
 
+Output::Output():Object(){
+}
+
+
 Output::Output(int size):Object(size){
+    mask=false;
+    distanceFactor=1;
+}
+
+Output::Output(int size, int* data):Object(size, data){
     mask=false;
     distanceFactor=1;
 }

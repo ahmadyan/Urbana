@@ -12,7 +12,9 @@ class Output: public Object{
                              //The output mask can change (from 1 to 0) if a new state is added to the list
                              //via update method
 public:
+    Output();            //default constructor will create a null boject
     Output(int size);
+    Output(int size, int* data);
     ~Output();
     
     void addState(State*);

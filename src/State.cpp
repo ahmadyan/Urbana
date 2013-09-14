@@ -9,6 +9,10 @@ State::State(State* s):Object(s->getSize()){
     }
 }
 
+State::State(int size, int* data):Object(size,data){
+    
+}
+
 State::State(){
 }
 

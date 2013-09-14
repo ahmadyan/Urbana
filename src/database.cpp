@@ -1,14 +1,18 @@
+
 #include "database.h"
 
 Database::Database(Configuration* config){
     config->getParameter("param.mvp.MVP_BRANCHFACTOR", &MVP_BRANCHFACTOR);
     config->getParameter("param.mvp.MVP_PATHLENGTH", &MVP_PATHLENGTH);
     config->getParameter("param.mvp.MVP_LEAFCAP", &MVP_LEAFCAP);
+    config->getParameter("param.mvp.enable", &enableMVP);
     cout << "Booting DB" << endl;
-    cout << MVP_BRANCHFACTOR << " " << MVP_PATHLENGTH << " " << MVP_LEAFCAP << endl ;
-    mvp::CmpFunc distance_func = hamming_distance;
-    outputVPT = mvp::mvptree_alloc(NULL, distance_func, MVP_BRANCHFACTOR, MVP_PATHLENGTH, MVP_LEAFCAP);
-    
+    if(enableMVP){
+        cout << "initializing MVP" << endl ;
+        cout << MVP_BRANCHFACTOR << " " << MVP_PATHLENGTH << " " << MVP_LEAFCAP << endl ;
+        mvp::CmpFunc distance_func = hamming_distance;
+        outputVPT = mvp::mvptree_alloc(NULL, distance_func, MVP_BRANCHFACTOR, MVP_PATHLENGTH, MVP_LEAFCAP);
+    }
 }
 
 Database::~Database(){
@@ -34,22 +38,30 @@ void Database::insert(State* state){
 //Insert a new output to the database, Complexity: O(1)
 void Database::insert(Output* output){
     if(!output->getDBFlag()){
+        //cout << "Inserting a new node to the DB" << endl ;
         //insert the output into the vector for direct access, just in case
         outputs.push_back(output);
         
-        //insert the output to the MVT tree for nearest node queries.
-        //Creating the MVT node
-        mvp::MVPDP* node = new mvp::MVPDP();
-        node->datalen = output->getSize();
-        node->data = output;
-        char scratch[32];
-        snprintf(scratch, 32, "point%llu", output->getID());
-        node->id = strdup(scratch);
-        cout << node->id << "   " << output->toString() << endl ;
+        //insert the output into the AVL tree for quick lookup
+        outputAVL.insert_unique(*output);
         
-        int err = mvp::mvptree_add(outputVPT, &node, 1);
-        assert(err == mvp::MVP_SUCCESS);
-        
+        if(enableMVP){
+            //insert the output to the MVT tree for nearest node queries.
+            //Creating the MVT node
+            mvp::MVPDP* node = new mvp::MVPDP();
+            node->datalen = output->getSize();
+            node->data = output;
+            char scratch[32];
+            snprintf(scratch, 32, "point%llu", output->getID());
+            node->id = strdup(scratch);
+            mvp::MVPError err = mvp::mvptree_add(outputVPT, &node, 1);
+            //cout << "Error code=" << err << endl ;
+            
+            if(err != mvp::MVP_SUCCESS){
+                cout << "[error] db::mvp " << mvp::mvp_errstr( err ) << endl;
+            }
+            assert(err == mvp::MVP_SUCCESS);
+        }
        // outputVPT.insert(output);
         output->setDBFlag(true);
     }
@@ -64,53 +76,24 @@ State* Database::getState(int* data){
     }
 }
 
+Output* Database::getOutput(int* data){
+    boost::intrusive::avltree<Output>::iterator it = outputAVL.find(data, Object());
+    if( it != outputAVL.end() ){
+        return &*it;
+    }else{
+        return new Output();
+    }
+}
 
-//This needs some serious work, this is the most naive way of search.
-//Todo: add a weight factor to the search, if we search a node once, counter++
-//Successfull searches (searched that resulted in clauses with higher positives) vs unsuccessfull searches
-//if we pick one node a lot, next time, lower the chance of picking it
-//or among nodes with distance <=k, pick a node with lowest pick-up.
+//Searching for nearest clauses
 Output* Database::search(Output* goal){
-    mvp::MVPError err;
-    float radius=7;
-    unsigned int nbresults;
-    
-    mvp::MVPDP* node = new mvp::MVPDP();
-    node->datalen = goal->getSize();
-    node->data = goal;
-    char scratch[32];
-    snprintf(scratch, 32, "point%llu", goal->getID());
-    node->id = strdup(scratch);
-    cout << node->id << "   " << goal->toString() << endl ;
-    
-
-    unsigned int knearest = 10;
-    
-    mvp::MVPDP **results = mvp::mvptree_retrieve(outputVPT, node, knearest, radius, &nbresults, &err);
-    int minimumDistance = 9999;
-
-    for (int i=0;i<nbresults;i++){
-        fprintf(stdout,"  FOUND --> (%d) %s  : ", i, results[i]->id);
-        cout << ((Output*)(results[i]->data))->toString() << endl ;
-   
-        
-        Output* out = ((Output*)(results[i]->data));
-        if(!out->getMask()){
-            return out;
-        }
-        
-                
-         }
-    assert(results);
-    assert(err == mvp::MVP_SUCCESS);
-    
-    
-
-    /*    int minimumDistance = 9999;
+    if(enableMVP==0){
+    int minimumDistance = INT_MAX;
     Output* result = getOutput(0);
     for(int i=0;i< outputSize();i++){
         if(!getOutput(i)->getMask()){
             if( getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i)) < minimumDistance ){
+                minimumDistance=getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i));
                 result = getOutput(i);
             }
         }
@@ -120,8 +103,80 @@ Output* Database::search(Output* goal){
         cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
     }
     return result;
-*/
- }
+
+    
+    }
+    
+    
+    int K = goal->getSize();            //number of K-nearest neighbor that we are looking at, should be equal to #clauses at least
+    //todo: find optimum K, how much trouble will I get into if I don't set K to #clauses?
+    //in case that we have less than K output in the database
+    if(outputSize()<=K){
+        //perform linear search
+        int minimumDistance = INT_MAX;
+        Output* result = getOutput(0);
+        for(int i=0;i< outputSize();i++){
+            if(!getOutput(i)->getMask()){
+                if( getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i)) < minimumDistance ){
+                    minimumDistance= getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i));
+                    result = getOutput(i);
+                }
+            }
+        }
+        result->miss();
+        if(result->getMask()){
+            cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
+        }
+        return result;
+    }
+    
+    float radius = 1;
+    mvp::MVPError err;
+    unsigned int nbresults=0;
+    mvp::MVPDP **results;
+    while(nbresults<K){
+        //gradually increase radius until we find at least K nearest neighbors
+        //Clean-up
+        if(results!=0) delete results;
+        //Create a new MVP-node
+        mvp::MVPDP* node = new mvp::MVPDP();
+        node->datalen = goal->getSize();
+        node->data = goal;
+        char scratch[32];
+        snprintf(scratch, 32, "point%llu", goal->getID());
+        node->id = strdup(scratch);
+    
+        //search the mvp for K nearest neighbor within radius (the actual number of neaerest neighbor might be more than just K)
+        results = mvp::mvptree_retrieve(outputVPT, node, K, radius, &nbresults, &err);
+        
+        radius*=5;      //todo: find the optimum variable, how sensitive are we on thing thing?
+    }
+    
+    //The MVP is going to nag becuase there are usually more than just K nearest neighbor in the radius we are searching
+    //if(err != mvp::MVP_SUCCESS){
+    //    cout << "[error] db::mvp " << mvp::mvp_errstr( err ) << endl;
+    //}
+
+    //Finally, choose the suitable candidate among those N nodes
+    int minimumDistance = INT_MAX;
+    Output* result = ((Output*)(results[0]->data));
+    for (int i=1;i<nbresults;i++){
+        Output* current = (Output*)(results[i]->data);
+        double currentDistance=goal->distance(current);
+        if(!current->getMask()){
+            if( current->getDistanceFactor()*currentDistance < minimumDistance ){
+                minimumDistance=current->getDistanceFactor()*currentDistance;
+                result = current;
+            }
+        }
+    }
+    result->miss();
+    if(result->getMask()){
+        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
+    }
+    
+    return result;
+}
 
 void Database::toString(){
     for(boost::intrusive::avltree<State>::iterator it = stateAVL.begin(); it!= stateAVL.end(); it++){

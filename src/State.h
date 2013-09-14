@@ -11,6 +11,7 @@ class State: public Object{
 public:
     State();            //default constructor will create a null boject
     State(int size);
+    State(int size, int* data);
     State(State*);
     ~State();
     void setOutput(Output*);

@@ -24,6 +24,7 @@ namespace mvp{
     }
 }
 class Database{
+    int enableMVP;
     int MVP_BRANCHFACTOR;
     int MVP_PATHLENGTH;
     int MVP_LEAFCAP;
@@ -32,6 +33,7 @@ class Database{
     std::vector<State*> states;
     
     boost::intrusive::avltree<State> stateAVL; // Binary search tree is used for fast exact search (O(log n))
+    boost::intrusive::avltree<Output> outputAVL; // Binary search tree is used for fast exact search (O(log n))
     mvp::MVPTree* outputVPT;    // Vintage Point tree is used for fast nearest search (O(log d))
     void insert(State*);
     void insert(Output*);
@@ -50,6 +52,7 @@ public:
     State* getState(int i);     // quick state lookup, O(1)
     State* getState(int*);      // searches for the state with given data, O(log n)
     Output* getOutput(int i);   // Quick output lookup, O(1)
+    Output* getOutput(int* data);
     Output* search(Output*);
     Node* operator[](const int) throw (const char*);
 };

@@ -8,22 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		F51A8DAC17C54F6A0067A9B4 /* Edge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51A8DAA17C54F6A0067A9B4 /* Edge.cpp */; };
-		F51A8DB517C87DBB0067A9B4 /* PickFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51A8DB317C87DBA0067A9B4 /* PickFacade.cpp */; };
-		F51A8DB817C87EA10067A9B4 /* PickNaive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51A8DB617C87EA10067A9B4 /* PickNaive.cpp */; };
 		F55C12E61799CC1C00BB35F6 /* makewff.c in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E51799CC1C00BB35F6 /* makewff.c */; };
 		F55C12E81799CC5500BB35F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E71799CC5500BB35F6 /* main.cpp */; };
 		F564E186179DC6420061F612 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E184179DC6420061F612 /* utility.cpp */; };
 		F564E18B179DC7870061F612 /* config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E187179DC7870061F612 /* config.cpp */; };
 		F564E18C179DC7870061F612 /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E189179DC7870061F612 /* plot.cpp */; };
 		F564E1A417A1B4BC0061F612 /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E1A217A1B4BC0061F612 /* object.cpp */; };
-		F56561BA17B9858800813B10 /* VPTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F56561B817B9858800813B10 /* VPTree.cpp */; };
 		F56561C017B985A700813B10 /* database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F56561BE17B985A700813B10 /* database.cpp */; };
-		F56561C317B9868700813B10 /* SearchTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F56561C117B9868700813B10 /* SearchTree.cpp */; };
 		F57AE642179DC04500BF0A5E /* State.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE640179DC04500BF0A5E /* State.cpp */; };
 		F57AE646179DC1A100BF0A5E /* Output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE644179DC1A100BF0A5E /* Output.cpp */; };
 		F57AE649179DC20800BF0A5E /* Graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE647179DC20800BF0A5E /* Graph.cpp */; };
 		F57AE64E179DC2B500BF0A5E /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE64C179DC2B500BF0A5E /* Node.cpp */; };
 		F57AE652179DC45A00BF0A5E /* SAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57AE650179DC45A00BF0A5E /* SAT.cpp */; };
+		F5A4625F17D7D55D00F3F049 /* mvptree.c in Sources */ = {isa = PBXBuildFile; fileRef = F5A4625E17D7D55D00F3F049 /* mvptree.c */; };
+		F5C4B0BE17DC147A00EB4622 /* Result.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C4B0BC17DC147A00EB4622 /* Result.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,10 +39,6 @@
 /* Begin PBXFileReference section */
 		F51A8DAA17C54F6A0067A9B4 /* Edge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Edge.cpp; path = ../../src/Edge.cpp; sourceTree = "<group>"; };
 		F51A8DAB17C54F6A0067A9B4 /* Edge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Edge.h; path = ../../src/Edge.h; sourceTree = "<group>"; };
-		F51A8DB317C87DBA0067A9B4 /* PickFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PickFacade.cpp; path = ../../src/PickFacade.cpp; sourceTree = "<group>"; };
-		F51A8DB417C87DBB0067A9B4 /* PickFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PickFacade.h; path = ../../src/PickFacade.h; sourceTree = "<group>"; };
-		F51A8DB617C87EA10067A9B4 /* PickNaive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PickNaive.cpp; path = ../../src/PickNaive.cpp; sourceTree = "<group>"; };
-		F51A8DB717C87EA10067A9B4 /* PickNaive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PickNaive.h; path = ../../src/PickNaive.h; sourceTree = "<group>"; };
 		F55C12D81799CBE600BB35F6 /* treeSAT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = treeSAT; sourceTree = BUILT_PRODUCTS_DIR; };
 		F55C12E51799CC1C00BB35F6 /* makewff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makewff.c; path = ../../src/makewff.c; sourceTree = "<group>"; };
 		F55C12E71799CC5500BB35F6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../src/main.cpp; sourceTree = "<group>"; };
@@ -57,12 +51,8 @@
 		F564E1A217A1B4BC0061F612 /* object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = ../../src/object.cpp; sourceTree = "<group>"; };
 		F564E1A317A1B4BC0061F612 /* object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = object.h; path = ../../src/object.h; sourceTree = "<group>"; };
 		F564E1A517A4AEBD0061F612 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.md; path = ../../src/README.md; sourceTree = "<group>"; };
-		F56561B817B9858800813B10 /* VPTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VPTree.cpp; path = ../../src/VPTree.cpp; sourceTree = "<group>"; };
-		F56561B917B9858800813B10 /* VPTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VPTree.h; path = ../../src/VPTree.h; sourceTree = "<group>"; };
 		F56561BE17B985A700813B10 /* database.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = database.cpp; path = ../../src/database.cpp; sourceTree = "<group>"; };
 		F56561BF17B985A700813B10 /* database.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = database.h; path = ../../src/database.h; sourceTree = "<group>"; };
-		F56561C117B9868700813B10 /* SearchTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SearchTree.cpp; path = ../../src/SearchTree.cpp; sourceTree = "<group>"; };
-		F56561C217B9868700813B10 /* SearchTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SearchTree.h; path = ../../src/SearchTree.h; sourceTree = "<group>"; };
 		F57AE640179DC04500BF0A5E /* State.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = State.cpp; path = ../../src/State.cpp; sourceTree = "<group>"; };
 		F57AE641179DC04500BF0A5E /* State.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = State.h; path = ../../src/State.h; sourceTree = "<group>"; };
 		F57AE644179DC1A100BF0A5E /* Output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Output.cpp; path = ../../src/Output.cpp; sourceTree = "<group>"; };
@@ -73,6 +63,10 @@
 		F57AE64D179DC2B500BF0A5E /* Node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Node.h; path = ../../src/Node.h; sourceTree = "<group>"; };
 		F57AE650179DC45A00BF0A5E /* SAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SAT.cpp; path = ../../src/SAT.cpp; sourceTree = "<group>"; };
 		F57AE651179DC45A00BF0A5E /* SAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SAT.h; path = ../../src/SAT.h; sourceTree = "<group>"; };
+		F5A4624117D7C9DD00F3F049 /* mvptree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mvptree.h; path = ../../src/mvptree.h; sourceTree = "<group>"; };
+		F5A4625E17D7D55D00F3F049 /* mvptree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mvptree.c; path = ../../src/mvptree.c; sourceTree = "<group>"; };
+		F5C4B0BC17DC147A00EB4622 /* Result.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Result.cpp; path = ../../src/Result.cpp; sourceTree = "<group>"; };
+		F5C4B0BD17DC147A00EB4622 /* Result.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Result.h; path = ../../src/Result.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,8 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				F57AE64F179DC43D00BF0A5E /* algorithm */,
-				F57AE64B179DC22C00BF0A5E /* utility */,
 				F57AE64A179DC21B00BF0A5E /* core */,
+				F57AE64B179DC22C00BF0A5E /* utility */,
 				F564E1A517A4AEBD0061F612 /* README.md */,
 			);
 			path = treeSAT;
@@ -135,6 +129,8 @@
 		F57AE64B179DC22C00BF0A5E /* utility */ = {
 			isa = PBXGroup;
 			children = (
+				F5C4B0BC17DC147A00EB4622 /* Result.cpp */,
+				F5C4B0BD17DC147A00EB4622 /* Result.h */,
 				F564E187179DC7870061F612 /* config.cpp */,
 				F564E188179DC7870061F612 /* config.h */,
 				F564E189179DC7870061F612 /* plot.cpp */,
@@ -150,18 +146,12 @@
 		F57AE64F179DC43D00BF0A5E /* algorithm */ = {
 			isa = PBXGroup;
 			children = (
-				F51A8DB317C87DBA0067A9B4 /* PickFacade.cpp */,
-				F51A8DB417C87DBB0067A9B4 /* PickFacade.h */,
-				F51A8DB617C87EA10067A9B4 /* PickNaive.cpp */,
-				F51A8DB717C87EA10067A9B4 /* PickNaive.h */,
+				F5A4625E17D7D55D00F3F049 /* mvptree.c */,
+				F5A4624117D7C9DD00F3F049 /* mvptree.h */,
 				F57AE650179DC45A00BF0A5E /* SAT.cpp */,
 				F57AE651179DC45A00BF0A5E /* SAT.h */,
-				F56561B817B9858800813B10 /* VPTree.cpp */,
-				F56561B917B9858800813B10 /* VPTree.h */,
 				F56561BE17B985A700813B10 /* database.cpp */,
 				F56561BF17B985A700813B10 /* database.h */,
-				F56561C117B9868700813B10 /* SearchTree.cpp */,
-				F56561C217B9868700813B10 /* SearchTree.h */,
 			);
 			name = algorithm;
 			sourceTree = "<group>";
@@ -228,12 +218,10 @@
 				F564E18B179DC7870061F612 /* config.cpp in Sources */,
 				F564E18C179DC7870061F612 /* plot.cpp in Sources */,
 				F564E1A417A1B4BC0061F612 /* object.cpp in Sources */,
-				F56561BA17B9858800813B10 /* VPTree.cpp in Sources */,
 				F56561C017B985A700813B10 /* database.cpp in Sources */,
-				F56561C317B9868700813B10 /* SearchTree.cpp in Sources */,
 				F51A8DAC17C54F6A0067A9B4 /* Edge.cpp in Sources */,
-				F51A8DB517C87DBB0067A9B4 /* PickFacade.cpp in Sources */,
-				F51A8DB817C87EA10067A9B4 /* PickNaive.cpp in Sources */,
+				F5A4625F17D7D55D00F3F049 /* mvptree.c in Sources */,
+				F5C4B0BE17DC147A00EB4622 /* Result.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,15 +257,14 @@
 					/usr/include/gsl,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/lib,
-					/usr/local/lib,
+					"/usr/lib/**",
+					"/usr/local/lib/**",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					/usr/local/lib/libboost_system.dylib,
 					/usr/local/lib/libboost_thread.dylib,
-					"-L/usr/local/lib",
 				);
 				SDKROOT = macosx;
 			};
@@ -306,14 +293,14 @@
 					/usr/include/gsl,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/lib,
-					/usr/local/lib,
+					"/usr/lib/**",
+					"/usr/local/lib/**",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					/usr/local/lib/libboost_system.dylib,
 					/usr/local/lib/libboost_thread.dylib,
-					"-L/usr/local/lib",
 				);
 				SDKROOT = macosx;
 			};
@@ -322,6 +309,16 @@
 		F55C12E31799CBE700BB35F6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../mvptree\"",
+				);
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libboost_system.dylib,
+					/usr/local/lib/libboost_thread.dylib,
+					"-L/usr/local/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -329,6 +326,16 @@
 		F55C12E41799CBE700BB35F6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../mvptree\"",
+				);
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libboost_system.dylib,
+					/usr/local/lib/libboost_thread.dylib,
+					"-L/usr/local/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
