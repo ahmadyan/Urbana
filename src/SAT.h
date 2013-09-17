@@ -31,6 +31,7 @@ class SAT{
     int* numOccurencePos;
     int* numOccurenceNeg;
     
+    int enableLearning;
     //statistics variables
     double* signalProbabilityStat;
     double** posCorrelationStatVariableClause;
@@ -39,6 +40,15 @@ class SAT{
     double** correlationStatClauseVariable;
     
     double** probability;
+    
+    //mask
+    int enablePreProcess;
+    int* preValue;
+    int* variableMask;
+    int* clauseMask;
+    
+    int preDeterminedClauses;
+    int preDeterminedVariables;
     
 public:
     SAT(Configuration*);

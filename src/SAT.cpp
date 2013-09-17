@@ -127,13 +127,298 @@ SAT::SAT(Configuration* conf){
 		}
 	}
     delete occtmp;
+    
+
+    //Constant propagation optimization
+    //This works really good on circuit benchmarks, but fails miserebly on random sat benchmarks!
+    config->getParameter("param.constantpropagation", &enablePreProcess);
+    if(enablePreProcess==1){
+        variableMask=new int[numvariable]();
+        clauseMask=new int[numclause]();
+        preValue = new int[numvariable]();
+        
+        bool moreUnmaskedVariable;
+        do{
+            moreUnmaskedVariable=false;
+            for(int i=0;i<numclause;i++){
+                if(clauseMask[i]==0){   //if we have not yet determined the value of this clause
+                    int undeterminedCount=0;
+                    int undeterminedVar=-1;
+                    for(int j=0;j<size[i];j++){
+                        int var=getClause(i, j);
+                        if(variableMask[var]==0){
+                            undeterminedCount++;
+                            undeterminedVar=j;
+                        }
+                    }
+                    
+                    //if there is only 1 undetermined variable in this clause,
+                    //we can determine that variable and clause directly
+                    if(undeterminedCount==1){
+                        int var=getClause(i, undeterminedVar);
+                        bool sign = getSign(i, undeterminedVar);
+                        int data=0;
+                        for(int j=0;j<size[i];j++){
+                            if(j!=undeterminedVar){
+                                if( getSign(i, j)==preValue[getClause(i, j)] ){
+                                    data=1;
+                                }
+                            }
+                        }
+                        
+                        if(data==0){//Yaaay! we can remove another variable from the list!
+                            moreUnmaskedVariable=true;
+                            variableMask[var] = 1;
+                            preValue[var]=sign?1:0;
+                            clauseMask[i]=1;
+                            //cout << "Variable " << var << " has been determined throught clause " << i << "    [" << preValue[var] << "]" <<endl ;
+                        }
+                    }
+                }
+            }
+        }while(moreUnmaskedVariable);
+        
+        /*
+         122 :25 [1][1/0], 101 [0][0/0], 104 [0][0/0],
+         123 :25 [1][1/0], 102 [0][0/0], 104 [0][0/0],
+         124 :25 [1][1/0], 101 [0][0/0], 103 [0][0/0],
+         125 :25 [1][1/0], 101 [1][0/0], 102 [0][0/0], 103 [1][0/0],
+         127 :25 [0][1/0], 101 [0][0/0], 103 [1][0/0], 104 [1][0/0],
+         128 :25 [0][1/0], 101 [1][0/0], 103 [0][0/0], 104 [1][0/0],
+         243 :50 [1][1/1], 96 [0][1/1], 100 [0][1/1], 118 [0][0/0],
+         247 :51 [0][1/1], 98 [1][1/1], 106 [1][1/1], 118 [0][0/0],
+         264 :54 [1][1/1], 108 [0][1/1], 118 [0][0/0],
+         268 :55 [0][1/1], 110 [1][1/1], 118 [0][0/0],
+         */
+        for(int i=0; i<numclause;i++){
+            clauseMask[i]=0;
+            for(int j=0;j<size[i];j++){
+                int var=getClause(i, j);
+                //when can I mask the clause?
+                //If the clause doesn't have any input or I can determine it's output from any of it's current determined inputs.
+                if( (variableMask[var]==1) && (getSign(i, j)==preValue[var]) ){
+                    clauseMask[i]=1;
+                }
+            }
+        }
+        
+        int c=0,d=0;
+        for(int i=0;i<numvariable;i++){
+            if(variableMask[i]==1){
+                //cout << "variable " << i << " is determined" << endl;
+                c++;
+            }
+        }
+        
+        for(int i=0;i<numclause;i++){
+            if(clauseMask[i]==1){
+                //cout << "clause " << i << " is determined" << endl ;
+                d++;
+            }
+        }
+        preDeterminedClauses = d;
+        preDeterminedVariables = c;
+        cout << "Total determined variable = " << c << "/" << numvariable << endl ;
+        cout << "Total determined clauses = " << d << "/" << numclause<< endl ;
+        
+        int nullvar=0;
+        for(int i=0;i<numvariable;i++){
+            if(numOccurence[i]==0){
+                nullvar++;
+            }
+        }
+        //reduction in the original problem ...
+        int* variableMap1 = new int[numvariable]();
+        int* variableMap2 = new int[numvariable-preDeterminedVariables-nullvar];
+        int* clauseMap1 = new int[numclause]();
+        int* clauseMap2 = new int[numclause-preDeterminedClauses]();
+        
+        int k=0;
+        for(int i=0;i<numclause;i++){
+            if(clauseMask[i]==0){
+                clauseMap1[i]=k;
+                clauseMap2[k]=i;
+                k++;
+            }else{
+                clauseMap1[i]=-1;
+            }
+        }
+        
+        k=0;
+        for(int i=0;i<numvariable;i++){
+            if(variableMask[i]==0 && numOccurence[i]>0){
+                variableMap1[i]=k;
+                variableMap2[k]=i;
+                k++;
+            }else{
+                variableMap1[i]=-1;
+            }
+        }
+        
+         cout << "Dumping clauses " << endl ;
+         for(int i=0;i<numclause;i++){
+             if(clauseMask[i]==0){
+                 cout << i << " :" ;
+                 for(int j=0;j<size[i];j++){
+                     int var = getClause(i, j);
+                     int sign= getSign(i, j);
+                     if (variableMask[var]==0 )
+                         cout << var << " [" << sign << "]["<< variableMask[var] <<"/"<< preValue[var]  <<"], " ;
+                 }
+                 cout << endl ;
+             }
+         }
+         
+         cout << "Mapping clauses" << endl ;
+         for(int i=0;i<numclause-preDeterminedClauses; i++){
+             cout << i << "   <---" << clauseMap2[i] << endl;
+         }
+         
+         cout << "Mapping variables" << endl ;
+         for(int i=0;i<numvariable-preDeterminedVariables-nullvar;i++){
+             cout << i << "  <=---" << variableMap2[i] << " /" << numOccurence[variableMap2[i]] << endl;
+         }
+        
+        int* size_original = size;
+        int* numOccurence_original = numOccurence;
+        int* numOccurencePos_original = numOccurencePos;
+        int* numOccurenceNeg_original = numOccurenceNeg;
+        std::pair<int, bool>** clause_original = clause;
+        int** occurrence_original = occurrence;
+        int numvariable_original = numvariable;
+        int numclause_original = numclause;
+        numvariable -= preDeterminedVariables+nullvar;
+        numclause -= preDeterminedClauses;
+        
+        //update size
+        k=0;
+        size = new int[numclause]();
+        for(int i=0;i<numclause_original;i++){
+            if(clauseMask[i]==0){
+                size[k]=0;
+                for(int j=0;j<size_original[i];j++){
+                    if(variableMask[ getClause(i, j)]==0){
+                        size[k]++;
+                    }
+                }
+                k++;
+            }
+        }
+        
+        cout << "size array" << endl ;
+        for(int i=0;i<numclause;i++){
+            cout << i << " " << size[i] << endl ;
+        }
+        
+        //populating clause array
+        clause = new pair<int,bool>*[numclause];
+        for(int i=0, c=0;i < numclause; i++,c=0){
+            clause[i] = new pair<int, bool>[size[i]];
+            for(int j=0;j<size_original[ clauseMap2[i] ]; j++){
+                int var = clause_original[ clauseMap2[i] ][ j ].first;
+                bool sign = clause_original[ clauseMap2[i] ][ j ].second;
+                if (variableMask[var]==0 ){
+                    clause[i][c] = make_pair( variableMap1[var], sign);
+                    c++;
+                }
+            }
+        }
+    
+        
+         for(int i=0;i<numclause;i++){
+             cout << i << " : " ;
+             for(int j=0;j<size[i];j++){
+                 cout << getClause(i, j) << " [" << getSign(i, j)<< "],  ";
+             }
+             cout << endl ;
+         }
+        
+        occurrence = new int*[numvariable];
+        numOccurence = new int[numvariable]();
+        numOccurencePos = new int[numvariable]();
+        numOccurenceNeg = new int[numvariable]();
+        
+        for(int i=0;i<numclause;i++){
+            for(int j=0;j<size[i];j++){
+                numOccurence[getClause(i, j)]++;
+                if(getSign(i, j)){
+                    numOccurencePos[getClause(i, j)]++;
+                }else{
+                    numOccurenceNeg[getClause(i, j)]++;
+                }
+            }
+        }
+        
+        // Populating the occurance matrix
+        for(int i=0;i<numvariable;i++){
+            occurrence[i] = new int[numOccurence[i]];
+        }
+        
+        occtmp = new int[numvariable]();
+        for(int i = 0;i < numclause;i++){
+            for(int j = 0;j < size[i];j++){
+                int var = getClause(i, j);
+                occurrence[var][occtmp[var]] = i;
+                occtmp[var]++;
+            }
+        }
+        delete occtmp;
+        
+        for(int i=0;i<numvariable;i++){
+            cout << "var " << i << " " ;
+            
+            for(int j=0;j<numOccurence[i];j++){
+                cout << occurrence[i][j] << " " ;
+            }
+            cout << endl ;
+        }
+        
+        cout << "hhskadladkhlakhd" << endl ;
+        
+        delete variableMap2;
+        delete variableMap1;
+        delete clauseMap1;
+        delete clauseMap2;
+        
+        //cin >> k ;
+        
+        /*
+         
+         int* size_new = new int[preDeterminedClauses];
+         int k=0;
+         for(int i=0;i<preDeterminedClauses;i++){
+         if(){
+         k++;
+         }
+         }
+         
+         
+         numvariable -= preDeterminedVariables;
+         numclause -= preDeterminedClauses;
+         */
+        
+        
+        //numOccurence = copy->numOccurence; // number of times each literal occurs
+        //numOccurencePos = copy->numOccurencePos;
+        //numOccurenceNeg = copy->numOccurenceNeg;
+        //size = copy->size;
+        //clause = copy->clause;
+        //occurrence = copy->occurrence;
+        
+        
+    }
+
+    
+    
+    
+    
     result = new Result();
 }
 
 SAT::SAT(SAT* copy){
     config=copy->config;
     db = new Database(config);
-    numvariable=copy->numvariable;  
+    numvariable=copy->numvariable;
     numclause=copy->numclause;
     
     numOccurence = copy->numOccurence; // number of times each literal occurs
@@ -261,100 +546,104 @@ void SAT::updateNodeStat(Node* node){
 //The initial training part of the algorithm, we later update the algorithm using the statistics
 //genereated from the algorithm itself
 void SAT::init(){
-    int trainingSamples=100; config->getParameter("param.training", &trainingSamples);
-    //probability = new double*[numclause];
-
-    signalProbabilityStat = new double[numclause];
-    correlationStatVariableClause = new double*[numvariable];
-    correlationStatClauseVariable = new double*[numclause];
-    posCorrelationStatVariableClause = new double*[numvariable];
-    posCorrelationStatClauseVariable = new double*[numclause];
-    
-    for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause]();
-    for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable]();
-    for(int i=0;i<numvariable;i++) posCorrelationStatVariableClause[i]=new double[numclause]();
-    for(int i=0;i<numclause;i++) posCorrelationStatClauseVariable[i]=new double[numvariable]();
-    //for(int i=0;i<numclause;i++) probability[i] = new double[1 << size[i]]();
-    
-    for(int i=0;i<trainingSamples;i++){
-        State* s = new State(numvariable);
-        s->randomize();
-        Output* o = adjust(s);
-        for(int j=0;j<numclause;j++){
-            if(o->get(j)==1)
-                signalProbabilityStat[j]++;
-        }
-        for(int j=0;j<numvariable;j++){
-            for(int k=0;k<numOccurence[j];k++){
-                int clause = abs(occurrence[j][k]);
-                if( s->get(j) == o->get(clause)){ //corrolation of 0-0 and 1-1
-                    correlationStatVariableClause[j][clause]++;
-                    correlationStatClauseVariable[clause][j]++;
-                    if(s->get(j)==1){
-                        posCorrelationStatVariableClause[j][clause]++;
-                        posCorrelationStatClauseVariable[clause][j]++;
+    config->getParameter("param.learning", &enableLearning);
+    if(enableLearning==1){
+        int trainingSamples=100; config->getParameter("param.training", &trainingSamples);
+        //probability = new double*[numclause];
+        
+        signalProbabilityStat = new double[numclause];
+        correlationStatVariableClause = new double*[numvariable];
+        correlationStatClauseVariable = new double*[numclause];
+        posCorrelationStatVariableClause = new double*[numvariable];
+        posCorrelationStatClauseVariable = new double*[numclause];
+        
+        for(int i=0;i<numvariable;i++) correlationStatVariableClause[i]=new double[numclause]();
+        for(int i=0;i<numclause;i++) correlationStatClauseVariable[i]=new double[numvariable]();
+        for(int i=0;i<numvariable;i++) posCorrelationStatVariableClause[i]=new double[numclause]();
+        for(int i=0;i<numclause;i++) posCorrelationStatClauseVariable[i]=new double[numvariable]();
+        //for(int i=0;i<numclause;i++) probability[i] = new double[1 << size[i]]();
+        
+        for(int i=0;i<trainingSamples;i++){
+            State* s = new State(numvariable);
+            s->randomize();
+            Output* o = adjust(s);
+            for(int j=0;j<numclause;j++){
+                if(o->get(j)==1)
+                    signalProbabilityStat[j]++;
+            }
+            for(int j=0;j<numvariable;j++){
+                for(int k=0;k<numOccurence[j];k++){
+                    int clause = abs(occurrence[j][k]);
+                    if( s->get(j) == o->get(clause)){ //corrolation of 0-0 and 1-1
+                        correlationStatVariableClause[j][clause]++;
+                        correlationStatClauseVariable[clause][j]++;
+                        if(s->get(j)==1){
+                            posCorrelationStatVariableClause[j][clause]++;
+                            posCorrelationStatClauseVariable[clause][j]++;
+                        }
                     }
                 }
             }
-        }
-       /*
-        for(int j=0;j<numclause;j++){
-            if(o->get(j) == 1){
-                int x=0;
-                for(int k=0;k<size[j];k++){
-                    if(s->get(k)==1){
-                        x++;//bug
-                    }
-                }
-                probability[j][x]++;
-            }
-        }*/
-        
-        
-        delete s;
-        delete o;
-    }
-    
-    for(int i=0;i<numclause;i++){
-        signalProbabilityStat[i] /= trainingSamples;
-    }
-    for(int i=0;i<numvariable;i++){
-        for(int j=0;j<numclause;j++){
-            correlationStatVariableClause[i][j]/= trainingSamples;
-            correlationStatClauseVariable[j][i]/= trainingSamples;
-            posCorrelationStatVariableClause[i][j]/= trainingSamples;
-            posCorrelationStatClauseVariable[j][i]/= trainingSamples;
-        }
-    }
-    
-    //for(int i=0;i<numclause;i++){
-    //    for(int j=0;j<(1<<size[i]);j++){
-    //        probability[i][j] /= trainingSamples;
-    //    }
-    //}
-    
-    for(int i=0;i<numclause;i++){
-        cout << "clause:" << i << " " << signalProbabilityStat[i] << endl;
-    }
-    for(int i=0;i<numvariable;i++){
-        cout << "var " << i << " " ;
-        for(int j=0;j<numOccurence[i];j++){
-            int clause = abs(occurrence[i][j]);
-            cout << "(" << clause << ") " ;
-            cout << correlationStatVariableClause[i][clause] << "(" << posCorrelationStatVariableClause[i][clause]  << ") ";
-        }
-        cout << endl ;
-    }
-
-    for(int i=0;i<numclause;i++){
-        cout << "clause " << i << " " ;
-        for(int j=0;j<size[i];j++){
+            /*
+             for(int j=0;j<numclause;j++){
+             if(o->get(j) == 1){
+             int x=0;
+             for(int k=0;k<size[j];k++){
+             if(s->get(k)==1){
+             x++;//bug
+             }
+             }
+             probability[j][x]++;
+             }
+             }*/
             
-            int var = getClause(i, j);
-            cout << "("<< var << ") " ;
-            cout << correlationStatClauseVariable[i][var] << "(" << posCorrelationStatClauseVariable[i][var] << ")    ";
+            
+            delete s;
+            delete o;
         }
-        cout << endl ;
+        
+        for(int i=0;i<numclause;i++){
+            signalProbabilityStat[i] /= trainingSamples;
+        }
+        for(int i=0;i<numvariable;i++){
+            for(int j=0;j<numclause;j++){
+                correlationStatVariableClause[i][j]/= trainingSamples;
+                correlationStatClauseVariable[j][i]/= trainingSamples;
+                posCorrelationStatVariableClause[i][j]/= trainingSamples;
+                posCorrelationStatClauseVariable[j][i]/= trainingSamples;
+            }
+        }
+        
+        //for(int i=0;i<numclause;i++){
+        //    for(int j=0;j<(1<<size[i]);j++){
+        //        probability[i][j] /= trainingSamples;
+        //    }
+        //}
+        /*
+        for(int i=0;i<numclause;i++){
+            cout << "clause:" << i << " " << signalProbabilityStat[i] << endl;
+        }
+        for(int i=0;i<numvariable;i++){
+            cout << "var " << i << " " ;
+            for(int j=0;j<numOccurence[i];j++){
+                int clause = abs(occurrence[i][j]);
+                cout << "(" << clause << ") " ;
+                cout << correlationStatVariableClause[i][clause] << "(" << posCorrelationStatVariableClause[i][clause]  << ") ";
+            }
+            cout << endl ;
+        }
+        
+        for(int i=0;i<numclause;i++){
+            cout << "clause " << i << " " ;
+            for(int j=0;j<size[i];j++){
+                
+                int var = getClause(i, j);
+                cout << "("<< var << ") " ;
+                cout << correlationStatClauseVariable[i][var] << "(" << posCorrelationStatClauseVariable[i][var] << ")    ";
+            }
+            cout << endl ;
+        }
+        */
     }
 }
 
@@ -571,7 +860,7 @@ int SAT::select(Node* node){
 int* SAT::goal(){
     
     string strategy;       config->getParameter("param.bias", &strategy);
-    double goalBias=0.5;
+    double goalBias=0.5;   config->getParameter("param.randomBias", &goalBias);
     if( strategy.compare("uniform")==0){
         goalBias=0.5;
     }else if(strategy.compare("fixed")==0){
@@ -588,7 +877,7 @@ int* SAT::goal(){
         }
     }else if(strategy.compare("variable")==0){
         double r = (double)rand()/(double)RAND_MAX;
-        if( r>0.1 ){
+        if( r>=0.8 ){
             goalBias = 1 ;
         //}else if (r>0.3){
  //           goalBias = 0.75;
@@ -624,6 +913,10 @@ void SAT::solve(){
     updateNodeStat(root);
     db->insert(root);
     g->add(root);
+    if(root->isSatisfiable()){
+        satisfiableAssignmentFound=true;
+        solution=root;
+    }
 
     while( !satisfiableAssignmentFound && iter<maxIterations ){
         if(iter%10==0){

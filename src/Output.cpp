@@ -59,9 +59,11 @@ void Output::setDistanceFactor(double d){
 }
 
 void Output::hit(){
+    cout << "hit" << endl ;
     distanceFactor *= 0.9 ;
 }
 
 void Output::miss(){
-    distanceFactor *= 1.1;
+
+    distanceFactor *= 1.3;
 }
