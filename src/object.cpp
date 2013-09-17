@@ -131,3 +131,12 @@ double Object::distance(Object* v){
     }
     return distance;
 }
+
+int Object::getunsat(){
+    int c=0;
+    for(int i=0;i<size;i++){
+        if(data[i]==0)
+            c++;
+    }
+    return c;
+}

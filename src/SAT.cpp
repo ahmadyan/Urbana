@@ -946,6 +946,8 @@ void SAT::solve(){
         int flipBit = select(nearestNode);
         Node* newNode = flip(nearestNode, flipBit);
         
+        int unsatCount = newNode->getOutput()->getunsat();
+        cout << "unsatCount " << iter << " " << unsatCount << endl ;
         if(!newNode->getDBFlag())
             db->insert(newNode);
         

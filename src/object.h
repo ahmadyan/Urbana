@@ -41,6 +41,7 @@ public:
     bool null();
     void setDBFlag(bool);
     bool getDBFlag();
+    int getunsat();
     double distance(Object*);
     
     //Comparison operators.
