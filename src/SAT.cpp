@@ -135,7 +135,10 @@ SAT::SAT(Configuration* conf){
     if(enablePreProcess==1){
         variableMask=new int[numvariable]();
         clauseMask=new int[numclause]();
-        preValue = new int[numvariable]();
+        preValue = new int[numvariable];
+        for(int i=0;i<numvariable;i++){
+            preValue[i]=-1;
+        }
         
         bool moreUnmaskedVariable;
         do{
@@ -201,6 +204,7 @@ SAT::SAT(Configuration* conf){
                 }
             }
         }
+        
         
         int c=0,d=0;
         for(int i=0;i<numvariable;i++){
@@ -375,10 +379,10 @@ SAT::SAT(Configuration* conf){
         
         cout << "hhskadladkhlakhd" << endl ;
         
-        delete variableMap2;
-        delete variableMap1;
-        delete clauseMap1;
-        delete clauseMap2;
+//        delete variableMap2;
+//        delete variableMap1;
+//        delete clauseMap1;
+//        delete clauseMap2;
         
         //cin >> k ;
         
@@ -404,6 +408,62 @@ SAT::SAT(Configuration* conf){
         //size = copy->size;
         //clause = copy->clause;
         //occurrence = copy->occurrence;
+        
+        
+        
+        for(int i=0;i<numclause;i++){
+            cout << i << " " << clauseMap2[i] << " " << size[i] << "\t\t\t\t";
+            for(int j=0;j<size[i];j++){
+                cout << getClause(i, j) << " (" << variableMap2[getClause(i, j)] << ")]" ;
+            }
+            cout << endl;
+        }
+        
+        cout << "*************" << endl ;
+/*        for(int i=0;i<numcl ause;i++){
+            if(size[i]==0){
+                //we are in busineess.
+                                cout << i << "[" << oc << "] /" << clauseMask[oc] << " :";
+                for(int j=0;j<size_original[oc];j++){
+                    cout << clause_original[oc][j].first << " (" << clauseMap1[clause_original[oc][j].first ]  <<")" ;
+                }
+                cout << endl ;
+            }
+        }*/
+        
+        bool conflict=false;
+        for(int i=0; i<numclause;i++){
+            if(size[i]==0){
+                int r=0;
+                int oc = clauseMap2[i];
+                for(int j=0;j<size_original[oc];j++){
+                    int var = clause_original[oc][j].first;
+                    bool sign = clause_original[oc][j].second;
+                    if(sign==preValue[var]){
+                        r=1;
+                    }
+                }
+                if(r==0){
+                    cout << "Found conflict, Unsatisfiable Clause!  Clause:" << oc << " ";
+                    conflict=true;
+                    for(int j=0;j<size_original[oc];j++){
+                        int var = clause_original[oc][j].first;
+                        bool sign = clause_original[oc][j].second;
+                        if(sign)
+                            cout << var << "(" << preValue[var] << ") " ;
+                        else
+                            cout << "~" << var << "(" << preValue[var] << ") " ;
+
+                    }
+                    cout << endl ;
+                }
+            }
+        }
+        
+        if(conflict){
+                                exit(1);
+        }
+
         
         
     }
@@ -816,7 +876,9 @@ int SAT::pick_bayesian(Node* node){
 
 //We randomly select an unsatisfied claused and flip one of it's inputs
 int SAT::pick_random(Node* node){
+    //todo: bug
     int tofix = node->falseClause[random()%node->numfalse];
+        cout << tofix << " "  << node->numfalse  << " " << size[tofix] << endl ;
     int flipBit= getClause(tofix, random()%size[tofix]);
     //int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
     return flipBit;
@@ -946,8 +1008,8 @@ void SAT::solve(){
         int flipBit = select(nearestNode);
         Node* newNode = flip(nearestNode, flipBit);
         
-        int unsatCount = newNode->getOutput()->getunsat();
-        cout << "unsatCount " << iter << " " << unsatCount << endl ;
+        //int unsatCount = newNode->getOutput()->getunsat();
+        //cout << "unsatCount " << iter << " " << unsatCount << endl ;
         if(!newNode->getDBFlag())
             db->insert(newNode);
         
