@@ -96,21 +96,9 @@ SAT::SAT(Configuration* conf){
         }
 	}
     
-    /*
-    for(int i=0;i<numclause;i++){
-        cout << clause[i] << endl ;
-        cout << "C"<< i << " size:" << size[i] << endl ;
-        for(int j=0;j<size[i];j++){
-            cout << clause[i][j].first << " (" << clause[i][j].second << ") " ;
-        }
-        cout << endl ;
-    }*/
-    
-    
     // Populating the occurance matrix
     // The occurance matrix keeps track of which clauses a variables appear in
     // Index as occurance[variable][clause]
-    
     for(int i=0;i<numvariable;i++){
         occurrence[i] = new int[numOccurence[i]];
     }
@@ -128,11 +116,11 @@ SAT::SAT(Configuration* conf){
 	}
     delete occtmp;
     
-
     //Constant propagation optimization
     //This works really good on circuit benchmarks, but fails miserebly on random sat benchmarks!
     config->getParameter("param.constantpropagation", &enablePreProcess);
     if(enablePreProcess==1){
+        cout << "[init] Constant propagation is enabeld. Proceed with reducing the search space." << endl ;
         variableMask=new int[numvariable]();
         clauseMask=new int[numclause]();
         preValue = new int[numvariable];
@@ -181,18 +169,6 @@ SAT::SAT(Configuration* conf){
             }
         }while(moreUnmaskedVariable);
         
-        /*
-         122 :25 [1][1/0], 101 [0][0/0], 104 [0][0/0],
-         123 :25 [1][1/0], 102 [0][0/0], 104 [0][0/0],
-         124 :25 [1][1/0], 101 [0][0/0], 103 [0][0/0],
-         125 :25 [1][1/0], 101 [1][0/0], 102 [0][0/0], 103 [1][0/0],
-         127 :25 [0][1/0], 101 [0][0/0], 103 [1][0/0], 104 [1][0/0],
-         128 :25 [0][1/0], 101 [1][0/0], 103 [0][0/0], 104 [1][0/0],
-         243 :50 [1][1/1], 96 [0][1/1], 100 [0][1/1], 118 [0][0/0],
-         247 :51 [0][1/1], 98 [1][1/1], 106 [1][1/1], 118 [0][0/0],
-         264 :54 [1][1/1], 108 [0][1/1], 118 [0][0/0],
-         268 :55 [0][1/1], 110 [1][1/1], 118 [0][0/0],
-         */
         for(int i=0; i<numclause;i++){
             clauseMask[i]=0;
             for(int j=0;j<size[i];j++){
@@ -232,10 +208,10 @@ SAT::SAT(Configuration* conf){
             }
         }
         //reduction in the original problem ...
-        int* variableMap1 = new int[numvariable]();
-        int* variableMap2 = new int[numvariable-preDeterminedVariables-nullvar];
-        int* clauseMap1 = new int[numclause]();
-        int* clauseMap2 = new int[numclause-preDeterminedClauses]();
+        variableMap1 = new int[numvariable]();
+        variableMap2 = new int[numvariable-preDeterminedVariables-nullvar];
+        clauseMap1 = new int[numclause]();
+        clauseMap2 = new int[numclause-preDeterminedClauses]();
         
         int k=0;
         for(int i=0;i<numclause;i++){
@@ -283,14 +259,14 @@ SAT::SAT(Configuration* conf){
              cout << i << "  <=---" << variableMap2[i] << " /" << numOccurence[variableMap2[i]] << endl;
          }
         
-        int* size_original = size;
-        int* numOccurence_original = numOccurence;
-        int* numOccurencePos_original = numOccurencePos;
-        int* numOccurenceNeg_original = numOccurenceNeg;
-        std::pair<int, bool>** clause_original = clause;
-        int** occurrence_original = occurrence;
-        int numvariable_original = numvariable;
-        int numclause_original = numclause;
+        size_original = size;
+        numOccurence_original = numOccurence;
+        numOccurencePos_original = numOccurencePos;
+        numOccurenceNeg_original = numOccurenceNeg;
+        clause_original = clause;
+        occurrence_original = occurrence;
+        numvariable_original = numvariable;
+        numclause_original = numclause;
         numvariable -= preDeterminedVariables+nullvar;
         numclause -= preDeterminedClauses;
         
@@ -327,7 +303,6 @@ SAT::SAT(Configuration* conf){
                 }
             }
         }
-    
         
          for(int i=0;i<numclause;i++){
              cout << i << " : " ;
@@ -377,60 +352,6 @@ SAT::SAT(Configuration* conf){
             cout << endl ;
         }
         
-        cout << "hhskadladkhlakhd" << endl ;
-        
-//        delete variableMap2;
-//        delete variableMap1;
-//        delete clauseMap1;
-//        delete clauseMap2;
-        
-        //cin >> k ;
-        
-        /*
-         
-         int* size_new = new int[preDeterminedClauses];
-         int k=0;
-         for(int i=0;i<preDeterminedClauses;i++){
-         if(){
-         k++;
-         }
-         }
-         
-         
-         numvariable -= preDeterminedVariables;
-         numclause -= preDeterminedClauses;
-         */
-        
-        
-        //numOccurence = copy->numOccurence; // number of times each literal occurs
-        //numOccurencePos = copy->numOccurencePos;
-        //numOccurenceNeg = copy->numOccurenceNeg;
-        //size = copy->size;
-        //clause = copy->clause;
-        //occurrence = copy->occurrence;
-        
-        
-        
-        for(int i=0;i<numclause;i++){
-            cout << i << " " << clauseMap2[i] << " " << size[i] << "\t\t\t\t";
-            for(int j=0;j<size[i];j++){
-                cout << getClause(i, j) << " (" << variableMap2[getClause(i, j)] << ")]" ;
-            }
-            cout << endl;
-        }
-        
-        cout << "*************" << endl ;
-/*        for(int i=0;i<numcl ause;i++){
-            if(size[i]==0){
-                //we are in busineess.
-                                cout << i << "[" << oc << "] /" << clauseMask[oc] << " :";
-                for(int j=0;j<size_original[oc];j++){
-                    cout << clause_original[oc][j].first << " (" << clauseMap1[clause_original[oc][j].first ]  <<")" ;
-                }
-                cout << endl ;
-            }
-        }*/
-        
         bool conflict=false;
         for(int i=0; i<numclause;i++){
             if(size[i]==0){
@@ -461,12 +382,9 @@ SAT::SAT(Configuration* conf){
         }
         
         if(conflict){
-                                exit(1);
+            exit(1);
         }
-
-        
-        
-    }
+    }   //End of constant propagation
 
     
     
@@ -644,20 +562,6 @@ void SAT::init(){
                     }
                 }
             }
-            /*
-             for(int j=0;j<numclause;j++){
-             if(o->get(j) == 1){
-             int x=0;
-             for(int k=0;k<size[j];k++){
-             if(s->get(k)==1){
-             x++;//bug
-             }
-             }
-             probability[j][x]++;
-             }
-             }*/
-            
-            
             delete s;
             delete o;
         }
@@ -673,37 +577,6 @@ void SAT::init(){
                 posCorrelationStatClauseVariable[j][i]/= trainingSamples;
             }
         }
-        
-        //for(int i=0;i<numclause;i++){
-        //    for(int j=0;j<(1<<size[i]);j++){
-        //        probability[i][j] /= trainingSamples;
-        //    }
-        //}
-        /*
-        for(int i=0;i<numclause;i++){
-            cout << "clause:" << i << " " << signalProbabilityStat[i] << endl;
-        }
-        for(int i=0;i<numvariable;i++){
-            cout << "var " << i << " " ;
-            for(int j=0;j<numOccurence[i];j++){
-                int clause = abs(occurrence[i][j]);
-                cout << "(" << clause << ") " ;
-                cout << correlationStatVariableClause[i][clause] << "(" << posCorrelationStatVariableClause[i][clause]  << ") ";
-            }
-            cout << endl ;
-        }
-        
-        for(int i=0;i<numclause;i++){
-            cout << "clause " << i << " " ;
-            for(int j=0;j<size[i];j++){
-                
-                int var = getClause(i, j);
-                cout << "("<< var << ") " ;
-                cout << correlationStatClauseVariable[i][var] << "(" << posCorrelationStatClauseVariable[i][var] << ")    ";
-            }
-            cout << endl ;
-        }
-        */
     }
 }
 
@@ -784,6 +657,7 @@ int SAT::pick_naive(Node* node){
 int SAT::pick_walksat2(Node* node){
     
 }
+
 //This is the same strategy as walksat/best
 //(C) WalkSAT
 pair<int, int> SAT::pick_best(Node* node){
@@ -815,7 +689,9 @@ pair<int, int> SAT::pick_best(Node* node){
             }
         }
 	}
-    if(numbest==0) return make_pair(-1, bestvalue);
+    
+    //if(numbest==0) return make_pair(-1, bestvalue);
+    cout << "numbest=" << numbest << endl ;
 	if (numbest == 1) return make_pair(best[0], bestvalue);
 	return make_pair(best[random()%numbest], bestvalue);
 }
@@ -840,9 +716,7 @@ int SAT::pick_frequencist(Node* node){
     
     int max=-1;
     double maxCorrolation=-1;
-    
     for(int i=0;i<size[flipClause]; i++){
-
         if(node->getStateMask(getClause(flipClause, i))==false){
             if(max==-1){
                 max=i;
@@ -859,21 +733,6 @@ int SAT::pick_frequencist(Node* node){
     return flipBit;
 }
 
-int SAT::pick_bayesian(Node* node){
-    int flipClause=-1;
-    int flipBit=0;
-    
-    for(int i=0;i<numclause;i++){
-        if(node->getOutput()->get(i)==0){
-            for(int j=0;j<size[i];j++){
-                //compute some sort of bayesian
-            }
-        }
-    }
-    
-    return flipBit;
-}
-
 //We randomly select an unsatisfied claused and flip one of it's inputs
 int SAT::pick_random(Node* node){
     int tofix = node->falseClause[random()%node->numfalse];
@@ -885,18 +744,75 @@ int SAT::pick_random(Node* node){
 
 //Selects should return which bit to flip in the state
 int SAT::select(Node* node){
+    bool randomFlag;
+    double randomBias = 0.5;                    config->getParameter("param.randomBias", &randomBias);
+    if( (double)rand()/(double)RAND_MAX < randomBias ){
+        randomFlag=true;
+    }
+    
+    
+    int numbreak;
+    int tofix;
+    int clausesize;
+    int i;
+    int best[MAXLENGTH];
+    register int numbest;
+    register int bestvalue;
+    register int var;
+    
+    tofix = node->falseClause[random()%node->numfalse];
+    clausesize = size[tofix];
+    numbest = 0;
+    bestvalue = 9999999;
+    
+    for (i=0; i< clausesize; i++){
+        var = getClause(tofix, i);
+        numbreak = node->breakcount[var];
+        if (numbreak<=bestvalue){
+            if (numbreak<bestvalue) numbest=0;
+            bestvalue = numbreak;
+            best[numbest++] = var;
+        }
+    }
+    
+    if (bestvalue>0 && (randomFlag))
+        return getClause(tofix, random()%clausesize );
+    
+    if (numbest == 1) return best[0];
+    return best[random()%numbest];
+    
+    
+    
+    
     pair<int, int> pick1 = pick_best(node);
     int defaultCandidate = pick1.first;
+//    cout << pick1.first << endl ;
+  //  if(pick1.first==-1) {
+    //    return pick_random(node);
+    //}
+    return pick1.first;
+    
+    /*
+    
+    
+    
     
     bool randomFlag;
     double randomBias = 0.5;                    config->getParameter("param.randomBias", &randomBias);
-    if( (double)rand()/(double)RAND_MAX < randomBias )
+        cout << "Pick:" << pick1.first << " " << pick1.second << " \t\t\t"<< randomBias << endl ;
+    if( (double)rand()/(double)RAND_MAX < randomBias ){
+        cout << "randomIsSet!" << endl;
         randomFlag=true;
+    }
+    
     if(pick1.first==-1){ //no viable candidate
+        cout << "Picking random, no viable option!" << endl ;
         return pick_random(node);
     }else if(pick1.second>0 && randomFlag){ //best strategy is going to break something,
+        cout << "Pick random again, no good strategy" << endl ;
         return pick_random(node);
     }else{ //pick best
+        cout << "Picking the best" << endl ;
         return defaultCandidate;
     }
         

@@ -1,6 +1,8 @@
 #include "Output.h"
 
 Output::Output():Object(){
+    mask=false;
+    distanceFactor=1;
 }
 
 
@@ -65,5 +67,5 @@ void Output::hit(){
 
 void Output::miss(){
 
-    distanceFactor *= 1.3;
+    distanceFactor *= 1.5;
 }

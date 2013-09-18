@@ -1393,6 +1393,7 @@ int pickrandom(void)
 
 int pickbest(void)
 {
+	printf("Picking best!\n");
   int numbreak;
     int tofix;
     int clausesize;
@@ -1417,6 +1418,7 @@ int pickbest(void)
       }
     }
 
+	printf("Best-value=%d , Numberofbest=%d \n", bestvalue, numbest);
     if (bestvalue>0 && ((random() & RANDOM_MASK) < adjusted_numerator))
       return ABS(clause[tofix][random()%clausesize]);
 

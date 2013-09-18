@@ -50,6 +50,21 @@ class SAT{
     int preDeterminedClauses;
     int preDeterminedVariables;
     
+    
+    
+    int* size_original;
+    int* numOccurence_original;
+    int* numOccurencePos_original;
+    int* numOccurenceNeg_original;
+    std::pair<int, bool>** clause_original;
+    int** occurrence_original;
+    int numvariable_original;
+    int numclause_original;
+    int* variableMap1;
+    int* variableMap2;
+    int* clauseMap1;
+    int* clauseMap2;
+
 public:
     SAT(Configuration*);
     SAT(SAT*);
@@ -74,7 +89,6 @@ public:
     int pick_walksat2(Node* node);
     pair<int, int> pick_best(Node* node);
     int pick_frequencist(Node* node);
-    int pick_bayesian(Node* node);
     int pick_random(Node* node);
     
     //int (*pickcode[6])(Node*) = {pick_naive, pick_walksat2, pick_walksat1, pick_frequencist, pick_bayesian, pick_random};
