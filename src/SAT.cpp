@@ -744,12 +744,14 @@ int SAT::pick_random(Node* node){
 
 //Selects should return which bit to flip in the state
 int SAT::select(Node* node){
-    bool randomFlag;
+    bool randomFlag=false;
     double randomBias = 0.5;                    config->getParameter("param.randomBias", &randomBias);
-    if( (double)rand()/(double)RAND_MAX < randomBias ){
+    double r= rand() / double(RAND_MAX);
+    if( r < randomBias ){
         randomFlag=true;
+    }else{
+        randomFlag=false;
     }
-    
     
     int numbreak;
     int tofix;
