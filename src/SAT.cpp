@@ -876,9 +876,7 @@ int SAT::pick_bayesian(Node* node){
 
 //We randomly select an unsatisfied claused and flip one of it's inputs
 int SAT::pick_random(Node* node){
-    //todo: bug
     int tofix = node->falseClause[random()%node->numfalse];
-        cout << tofix << " "  << node->numfalse  << " " << size[tofix] << endl ;
     int flipBit= getClause(tofix, random()%size[tofix]);
     //int flipBit = rand()%node->getState()->getSize();   //randomly selects a bit to flip.
     return flipBit;
@@ -939,7 +937,7 @@ int* SAT::goal(){
         }
     }else if(strategy.compare("variable")==0){
         double r = (double)rand()/(double)RAND_MAX;
-        if( r>=0.8 ){
+        if( r>=0.5 ){
             goalBias = 1 ;
         //}else if (r>0.3){
  //           goalBias = 0.75;
