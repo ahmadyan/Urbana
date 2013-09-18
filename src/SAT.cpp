@@ -784,40 +784,7 @@ int SAT::select(Node* node){
     return best[random()%numbest];
     
     
-    
-    
-    pair<int, int> pick1 = pick_best(node);
-    int defaultCandidate = pick1.first;
-//    cout << pick1.first << endl ;
-  //  if(pick1.first==-1) {
-    //    return pick_random(node);
-    //}
-    return pick1.first;
-    
-    /*
-    
-    
-    
-    
-    bool randomFlag;
-    double randomBias = 0.5;                    config->getParameter("param.randomBias", &randomBias);
-        cout << "Pick:" << pick1.first << " " << pick1.second << " \t\t\t"<< randomBias << endl ;
-    if( (double)rand()/(double)RAND_MAX < randomBias ){
-        cout << "randomIsSet!" << endl;
-        randomFlag=true;
-    }
-    
-    if(pick1.first==-1){ //no viable candidate
-        cout << "Picking random, no viable option!" << endl ;
-        return pick_random(node);
-    }else if(pick1.second>0 && randomFlag){ //best strategy is going to break something,
-        cout << "Pick random again, no good strategy" << endl ;
-        return pick_random(node);
-    }else{ //pick best
-        cout << "Picking the best" << endl ;
-        return defaultCandidate;
-    }
-        
+            
     /*string strategy;       config->getParameter("param.strategy", &strategy);
     if( strategy.compare("naive")==0){
         return pick_naive(node);
