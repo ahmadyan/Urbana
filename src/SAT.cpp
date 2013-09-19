@@ -267,6 +267,9 @@ SAT::SAT(Configuration* conf){
         occurrence_original = occurrence;
         numvariable_original = numvariable;
         numclause_original = numclause;
+        cout << "^^^^^^^^^^^^^" << endl ;
+        cout << numclause_original << " " << numvariable_original << endl ;
+                cout << "^^^^^^^^^^^^^" << endl ;
         numvariable -= preDeterminedVariables+nullvar;
         numclause -= preDeterminedClauses;
         
@@ -411,6 +414,29 @@ SAT::SAT(SAT* copy){
     posCorrelationStatClauseVariable = copy->posCorrelationStatClauseVariable;
     correlationStatVariableClause = copy->correlationStatVariableClause;
     correlationStatClauseVariable = copy->correlationStatClauseVariable;
+ 
+    
+    
+    enablePreProcess  = copy->   enablePreProcess;
+    preValue  = copy->   preValue;
+    variableMask   = copy->  variableMask;
+    clauseMask   = copy->  clauseMask;
+    
+    preDeterminedClauses   = copy->  preDeterminedClauses;
+    preDeterminedVariables   = copy->  preDeterminedVariables;
+    
+    size_original  = copy->   size_original;
+    numOccurence_original  = copy->   numOccurence_original;
+    numOccurencePos_original     = copy->numOccurencePos_original;
+    numOccurenceNeg_original    = copy-> numOccurenceNeg_original;
+    clause_original    = copy-> clause_original;
+    occurrence_original   = copy->  occurrence_original;
+    numvariable_original   = copy->  numvariable_original;
+    numclause_original  = copy->   numclause_original;
+    variableMap1   = copy->  variableMap1;
+    variableMap2   = copy->  variableMap2;
+    clauseMap1   = copy->  clauseMap1;
+    clauseMap2   = copy->  clauseMap2;
     
     result = new Result();
 }
@@ -805,29 +831,33 @@ int SAT::select(Node* node){
 int* SAT::goal(){
     
     string strategy;       config->getParameter("param.bias", &strategy);
-    double goalBias=0.5;   config->getParameter("param.randomBias", &goalBias);
+    double explorationBias=0.5; config->getParameter("param.explorationBias", &explorationBias);
+    double goalBias= 1-explorationBias;
+    
+    double p=0;         //probability that bith is 1
+    
     if( strategy.compare("uniform")==0){
-        goalBias=0.5;
+        p=0.5;
     }else if(strategy.compare("fixed")==0){
-        goalBias= 0.5+0.5*(double)iter/double(maxIterations);
+        p= 0.5+0.5*(double)iter/double(maxIterations);
     }else if(strategy.compare("adaptive")==0){
         int period;       config->getParameter("param.biasPeriod", &period);
         double rise=0.5; double fall=1-0.5;
         int i=iter%period;   //1<i<200
         if(i<= rise*period){
             // we are in a rising period of bias, iteratively increase the bias toward the goal
-            goalBias = 0.5 + 0.5*(double)i/(rise*period);
+            p = 0.5 + 0.5*(double)i/(rise*period);
         }else{ //100<i<200
-            goalBias = 1 - 0.5*(double)(i-rise*period)/(fall*period);
+            p = 1 - 0.5*(double)(i-rise*period)/(fall*period);
         }
     }else if(strategy.compare("variable")==0){
         double r = (double)rand()/(double)RAND_MAX;
-        if( r>=0.5 ){
-            goalBias = 1 ;
+        if( r<=goalBias){
+            p = 1 ;
         //}else if (r>0.3){
  //           goalBias = 0.75;
         }else{
-            goalBias=0.5;
+            p=0.5;
         }
     }else{
         cout << "Uknown biasing strategy" << endl ;
@@ -835,12 +865,13 @@ int* SAT::goal(){
 
     int* data = new int[numclause];
     for(int i=0;i<numclause;i++){
-        double x = (double)rand()/INT_MAX;
-        if(x<goalBias)
+        double x = (double)rand()/double(RAND_MAX);
+        if(x<p)
             data[i]=1;
         else
             data[i]=0;
     }
+    
     return data;
 }
 
@@ -864,9 +895,6 @@ void SAT::solve(){
     }
 
     while( !satisfiableAssignmentFound && iter<maxIterations ){
-        if(iter%10==0){
-            cout << iter << endl;
-        }
         //1. generate a new goal output
         Output* goalClause = new Output(numclause);
 
@@ -874,6 +902,7 @@ void SAT::solve(){
         // todo: check if we already reached the goal.
 
         //2. find the nearest output to the goal
+        
         Output* nearestOutput = db->search(goalClause);
         
         //3. Find the state corresponding to the nearest output
@@ -906,6 +935,10 @@ void SAT::solve(){
         }
         //7. update statistics
         
+        if(iter%100==0){
+            cout << iter << endl;
+        }
+        //cout << "* " << iter << " " << newNode->getOutput()->getunsat() << endl ;
         iter++;
     }
     
@@ -916,7 +949,46 @@ void SAT::solve(){
         result->iterations=iter;
         result->states=db->stateSize();
         cout << "found a satisfiable assigment" << endl ;
-        cout << solution->getState()->toString() << endl ;
+        
+        //double check the satisfiable assignment
+        int enablePreProcess;
+        config->getParameter("param.constantpropagation", &enablePreProcess);
+        cout << enablePreProcess << endl ;
+        if(enablePreProcess==1){
+            for(int i=0;i<numclause_original;i++){
+                int cl=0;
+                for(int j=0;j<size_original[i];j++){
+                    int var = clause_original[i][j].first;
+                    bool sign = clause_original[i][j].second;
+                    int value=-1;
+                    if(variableMap1[var]==-1){
+                        value=preValue[var];
+                    }else{//get the value from the solution
+                        value= solution->getState()->get(variableMap1[var]);
+                    }
+                    if(sign==value)
+                        cl=1;
+                }
+                if(cl==0){
+                    cout << "Error at preprocessing, the satisfiable assigment not found!" << endl ;
+                    exit(1);
+                }
+            }//for(int i=0;i<numclause_original;i++)
+            for(int i=0;i<numvariable_original;i++){
+                if(variableMap1[i]==-1){    //this variable was reduced during pre-process
+                    if(preValue[i]==-1){
+                        cout << "0" ;
+                    }else{
+                        cout << preValue[i] ;
+                    }
+                }else{//get the value from the solution
+                    cout << solution->getState()->get(variableMap1[i]) ;
+                }
+            }
+            cout << endl ;
+        }else{//if(enablePreProcess==1)
+            cout << solution->getState()->toString() << endl ;
+        }
     }else{
         result->success=false;
         cout << "No satisfiable assigment found." << endl ;

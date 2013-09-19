@@ -66,6 +66,5 @@ void Output::hit(){
 }
 
 void Output::miss(){
-
-    distanceFactor *= 1.5;
+    distanceFactor *= 1.3;
 }

@@ -49,9 +49,7 @@ class SAT{
     
     int preDeterminedClauses;
     int preDeterminedVariables;
-    
-    
-    
+
     int* size_original;
     int* numOccurence_original;
     int* numOccurencePos_original;

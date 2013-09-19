@@ -442,6 +442,7 @@ int main(int argc,char *argv[])
 	    print_statistics_start_flip();
 	    numflip++;
 	    flipatom((pickcode[heuristic])());
+	    printf("%d , %d\n", numflip, numfalse);
 	    update_statistics_end_flip();
 	}
 	update_and_print_statistics_end_try();
@@ -1393,7 +1394,6 @@ int pickrandom(void)
 
 int pickbest(void)
 {
-	printf("Picking best!\n");
   int numbreak;
     int tofix;
     int clausesize;
@@ -1418,7 +1418,7 @@ int pickbest(void)
       }
     }
 
-	printf("Best-value=%d , Numberofbest=%d \n", bestvalue, numbest);
+	
     if (bestvalue>0 && ((random() & RANDOM_MASK) < adjusted_numerator))
       return ABS(clause[tofix][random()%clausesize]);
 

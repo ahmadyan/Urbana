@@ -88,23 +88,24 @@ Output* Database::getOutput(int* data){
 //Searching for nearest clauses
 Output* Database::search(Output* goal){
     if(enableMVP==0){
-    int minimumDistance = INT_MAX;
-    Output* result = getOutput(0);
-    for(int i=0;i< outputSize();i++){
-        if(!getOutput(i)->getMask()){
-            if( getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i)) < minimumDistance ){
-                minimumDistance=getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i));
-                result = getOutput(i);
+        int minimumDistance = INT_MAX;
+        Output* result = getOutput(0);
+        for(int i=0;i< outputSize();i++){
+            if(!getOutput(i)->getMask()){
+                if( getOutput(i)->getDistanceFactor()*goal->distance(getOutput(i)) < minimumDistance ){
+                    minimumDistance=getOutput(i)->getDistanceFactor()*goal->distance(getOutput(i));
+                    result = getOutput(i);
+                }
             }
         }
-    }
-    result->miss();
-    if(result->getMask()){
-        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
-    }
-    return result;
-
-    
+        result->miss();
+        if(result->getMask()){
+            cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
+        }
+        
+        return result;
+        
+        
     }
     
     
@@ -117,8 +118,8 @@ Output* Database::search(Output* goal){
         Output* result = getOutput(0);
         for(int i=0;i< outputSize();i++){
             if(!getOutput(i)->getMask()){
-                if( getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i)) < minimumDistance ){
-                    minimumDistance= getOutput(i)->getDistanceFactor()*distance(goal, getOutput(i));
+                if( getOutput(i)->getDistanceFactor()*goal->distance(getOutput(i)) < minimumDistance ){
+                    minimumDistance= getOutput(i)->getDistanceFactor()*goal->distance(getOutput(i));
                     result = getOutput(i);
                 }
             }
@@ -145,7 +146,7 @@ Output* Database::search(Output* goal){
         char scratch[32];
         snprintf(scratch, 32, "point%llu", goal->getID());
         node->id = strdup(scratch);
-    
+        
         //search the mvp for K nearest neighbor within radius (the actual number of neaerest neighbor might be more than just K)
         results = mvp::mvptree_retrieve(outputVPT, node, K, radius, &nbresults, &err);
         
@@ -156,7 +157,7 @@ Output* Database::search(Output* goal){
     //if(err != mvp::MVP_SUCCESS){
     //    cout << "[error] db::mvp " << mvp::mvp_errstr( err ) << endl;
     //}
-
+    
     //Finally, choose the suitable candidate among those N nodes
     int minimumDistance = INT_MAX;
     Output* result = ((Output*)(results[0]->data));
