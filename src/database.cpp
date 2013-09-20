@@ -7,6 +7,9 @@ Database::Database(Configuration* config){
     config->getParameter("param.mvp.MVP_LEAFCAP", &MVP_LEAFCAP);
     config->getParameter("param.mvp.enable", &enableMVP);
     cout << "Booting DB" << endl;
+    
+    outputVPTree = new vptree::VPTree();
+
     if(enableMVP){
         cout << "initializing MVP" << endl ;
         cout << MVP_BRANCHFACTOR << " " << MVP_PATHLENGTH << " " << MVP_LEAFCAP << endl ;
@@ -44,6 +47,9 @@ void Database::insert(Output* output){
         
         //insert the output into the AVL tree for quick lookup
         outputAVL.insert_unique(*output);
+        
+        //outputVPTree->add(output);
+        
         
         if(enableMVP){
             //insert the output to the MVT tree for nearest node queries.
@@ -87,6 +93,36 @@ Output* Database::getOutput(int* data){
 
 //Searching for nearest clauses
 Output* Database::search(Output* goal){
+    int K = goal->getSize();            //number of K-nearest neighbor that we are looking at, should be equal to #clauses at least
+    /*
+    std::vector<Object*> neighbors;
+    std::vector<double> distances;
+    
+    outputVPTree->search(goal, 100, &neighbors, &distances);
+    
+    int minimumDistance = INT_MAX;
+    Output* result = (Output*)neighbors[0];
+    for(int i=0;i< neighbors.size();i++){
+        Output* current = (Output*)neighbors[i];
+        if(!current->getMask()){
+            if( current->getDistanceFactor()*goal->distance(current) < minimumDistance ){
+                minimumDistance=current->getDistanceFactor()*goal->distance(current);
+                result = current;
+            }
+        }
+    }
+    result->miss();
+    if(result->getMask()){
+        cout << "Woah! The search space is empty, we should restart the urbana" << endl ;
+    }
+    
+    return result;
+
+    
+    */
+    
+    
+    
     if(enableMVP==0){
         int minimumDistance = INT_MAX;
         Output* result = getOutput(0);
@@ -109,7 +145,7 @@ Output* Database::search(Output* goal){
     }
     
     
-    int K = goal->getSize();            //number of K-nearest neighbor that we are looking at, should be equal to #clauses at least
+    
     //todo: find optimum K, how much trouble will I get into if I don't set K to #clauses?
     //in case that we have less than K output in the database
     if(outputSize()<=K){

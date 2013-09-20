@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F51A8DAC17C54F6A0067A9B4 /* Edge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51A8DAA17C54F6A0067A9B4 /* Edge.cpp */; };
+		F547AE8017EC2CE7008795FC /* vptree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F547AE7F17EC2CE7008795FC /* vptree.cpp */; };
 		F55C12E61799CC1C00BB35F6 /* makewff.c in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E51799CC1C00BB35F6 /* makewff.c */; };
 		F55C12E81799CC5500BB35F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55C12E71799CC5500BB35F6 /* main.cpp */; };
 		F564E186179DC6420061F612 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F564E184179DC6420061F612 /* utility.cpp */; };
@@ -39,6 +40,8 @@
 /* Begin PBXFileReference section */
 		F51A8DAA17C54F6A0067A9B4 /* Edge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Edge.cpp; path = ../../src/Edge.cpp; sourceTree = "<group>"; };
 		F51A8DAB17C54F6A0067A9B4 /* Edge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Edge.h; path = ../../src/Edge.h; sourceTree = "<group>"; };
+		F547AE7E17EC2CE7008795FC /* vptree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vptree.h; path = ../../src/vptree.h; sourceTree = "<group>"; };
+		F547AE7F17EC2CE7008795FC /* vptree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vptree.cpp; path = ../../src/vptree.cpp; sourceTree = "<group>"; };
 		F55C12D81799CBE600BB35F6 /* treeSAT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = treeSAT; sourceTree = BUILT_PRODUCTS_DIR; };
 		F55C12E51799CC1C00BB35F6 /* makewff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makewff.c; path = ../../src/makewff.c; sourceTree = "<group>"; };
 		F55C12E71799CC5500BB35F6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../src/main.cpp; sourceTree = "<group>"; };
@@ -146,6 +149,8 @@
 		F57AE64F179DC43D00BF0A5E /* algorithm */ = {
 			isa = PBXGroup;
 			children = (
+				F547AE7E17EC2CE7008795FC /* vptree.h */,
+				F547AE7F17EC2CE7008795FC /* vptree.cpp */,
 				F5A4625E17D7D55D00F3F049 /* mvptree.c */,
 				F5A4624117D7C9DD00F3F049 /* mvptree.h */,
 				F57AE650179DC45A00BF0A5E /* SAT.cpp */,
@@ -222,6 +227,7 @@
 				F51A8DAC17C54F6A0067A9B4 /* Edge.cpp in Sources */,
 				F5A4625F17D7D55D00F3F049 /* mvptree.c in Sources */,
 				F5C4B0BE17DC147A00EB4622 /* Result.cpp in Sources */,
+				F547AE8017EC2CE7008795FC /* vptree.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

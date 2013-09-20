@@ -14,20 +14,20 @@
 #include "SAT.h"
 #include "Result.h"
 
+
+#include "vptree.h"
 using namespace std;
 using namespace  boost::accumulators;
 
 int main(int argc,char *argv[]){
+    srand((int)time(0));
     accumulator_set<double, stats<tag::variance> > acc;
-     accumulator_set<double, stats<tag::variance> > acc2;
+    accumulator_set<double, stats<tag::variance> > acc2;
     srand((int)time(0));
     Configuration* config = new Configuration("config");
     parse_parameters(argc, argv, config);
     vector<Result*> results;
-    
-   
     int run=100; config->getParameter("param.run", &run);
-    
     SAT* golden = new SAT(config);
     golden->init();
     golden->solve();
@@ -51,7 +51,7 @@ int main(int argc,char *argv[]){
     }
         
     cout <<"Count : " << boost::accumulators::count(acc) << "/" << results.size() << endl;
-    cout<<"Mean  :  "<<mean(acc)<< "    " << mean(acc2) << endl;
+    cout <<"Mean  :  "<<mean(acc)<< "    " << mean(acc2) << endl;
     //cout<<"moment : "<<moment<2>(acc)<<endl;
     cout<<"deviation : "<< sqrt(variance(acc)) << "     " << sqrt(variance(acc2)) <<endl;
     

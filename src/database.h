@@ -18,6 +18,8 @@
 #include "Node.h"
 #include "config.h"
 
+#include "vptree.h"
+
 namespace mvp{
     extern "C"{
         #include "mvptree.h"
@@ -35,6 +37,8 @@ class Database{
     boost::intrusive::avltree<State> stateAVL; // Binary search tree is used for fast exact search (O(log n))
     boost::intrusive::avltree<Output> outputAVL; // Binary search tree is used for fast exact search (O(log n))
     mvp::MVPTree* outputVPT;    // Vintage Point tree is used for fast nearest search (O(log d))
+    vptree::VPTree* outputVPTree;
+    
     void insert(State*);
     void insert(Output*);
 public:

@@ -1,6 +1,7 @@
 #include "utility.h"
 #include <iostream>
 #include <ctime>
+#include <cstring>
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>

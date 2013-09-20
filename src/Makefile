@@ -15,7 +15,6 @@ TARGET = urbanaSAT
 
 # dlib source
 #SRCS = ../lib/dlib/all/source.cpp 
-
 OBJS =	config.o	
 OBJS += Graph.o				
 OBJS += main.o
@@ -26,7 +25,7 @@ OBJS += plot.o
 OBJS += SAT.o
 OBJS += State.o
 OBJS += utility.o
-
+OBJS += vptree.o
 
 TMPS = $(SRCS:.cpp=.o)
 OBJS += $(TMPS:.c=.o)
